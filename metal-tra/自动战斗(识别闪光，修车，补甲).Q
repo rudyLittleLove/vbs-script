@@ -37,14 +37,10 @@ Function FindImage(imgName, x1, y1, x2, y2, similarity)
     FindImage = (intX > 0)
 End Function
 
-// 点击按键指定次数，每次点击后延迟（默认延迟0）
-// 用法: Press "K"        -> 按1次K，无延迟
-//       Press "K", 3     -> 按3次K，无延迟
-//       Press "K", 3, 100 -> 按3次K，每次延迟100ms
+// 点击按键count次，每次延迟delayMs
+// 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
 Function Press(key, count, delayMs)
     Dim i
-    If IsMissing(count) Then count = 1
-    If IsMissing(delayMs) Then delayMs = 0
     If count < 1 Then count = 1
     If delayMs < 0 Then delayMs = 0
     For i = 1 To count
@@ -54,32 +50,26 @@ Function Press(key, count, delayMs)
 End Function
 
 // 长按指定按键，按住指定毫秒后松开
-// 用法: PressHold "D", 800       -> 按住D 800ms，松开后无延迟
-//       PressHold "D", 800, 100  -> 按住D 800ms，松开后延迟100ms
-Function PressHold(key, holdMs, delayMs)
-    If IsMissing(delayMs) Then delayMs = 0
+// 用法: PressHold "D", 800  -> 按住D 800ms
+Function PressHold(key, holdMs)
     If holdMs < 0 Then holdMs = 0
-    If delayMs < 0 Then delayMs = 0
     KeyDown key, 1
     If holdMs > 0 Then Delay holdMs
     KeyUp key, 1
-    If delayMs > 0 Then Delay delayMs
 End Function
 
 // ==================== 补血 ====================
 
 Function jiaxue()
-    Press "A"
-    Press "W"
+    KeyPress "A", 1
+    KeyPress "W", 1
     Press "K", 1, 100
     Press "S", 1, 100
     Press "K", 1, 100
     Press "S", 1, 100
     Press "K", 4, 100
-    Press "K", 1, 300
-    Press "K", 1, 300
-    Press "K", 1, 300
-    KeyPress "J", 4
+    Press "K", 3, 300
+    Press "J", 4, 50
 End Function
 
 // ==================== 补装甲流程 ====================
@@ -104,20 +94,17 @@ Function repair()
     // 向右移动（持续800ms）
     PressHold "D", 800
     // 向上移动（持续600ms）
-    PressHold "W", 600, 100
+    PressHold "W", 600
     // 等待进入修理铺过度
     Delay 800
     // 对话让人让开（按K确定2次）
-    Press "K", 1, 500
-    Press "K", 1, 500
+    Press "K", 2, 500
     // 向上移动（持续800ms）
-    KeyDown "W", 1
-    	If hasNotZj Then 
-    		Delay 1400
-    	Else 
-    		Delay 800
-    	End If
-    KeyUp "W", 1
+    If hasNotZj Then 
+        PressHold "W", 1400
+    Else 
+        PressHold "W", 800
+    End If
     Delay 300
     Press "D", 1, 200
     	If hasNotZj Then 
@@ -127,16 +114,14 @@ Function repair()
     		Press "J", 3, 300
     		Press "E", 1, 300
     		Press "K", 1, 300
-    		PressHold "S", 500, 300
+    		PressHold "S", 500
+    		Delay 300
     		Press "D", 1, 100
     	End If
     
     // 对话加装甲（按K确定5次）
     Press "K", 1, 300
-    Press "K", 1, 500
-    Press "K", 1, 500
-    Press "K", 1, 500
-    Press "K", 1, 500
+    Press "K", 4, 500
     Press "R", 1, 300
     // 向右选择按2次
     Press "D", 2, 200
@@ -193,7 +178,6 @@ Function checkBattleState()
     
     // 再检测是否在大地图（无菜单栏 或 中间区域有战车）
     If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
-        KeyPress "H", 1
         checkBattleState = STATE_MAP
         Exit Function
     End If
@@ -234,7 +218,7 @@ Function run()
             If checkFlash() Then hasFlashDetected = True
         End If
         switchWeaponInBattle
-        Press "K"
+        Press "K", 1, 0
         Exit Function
     End If
     
@@ -246,7 +230,7 @@ Function run()
     
     // ====== 正常打怪流程 ======
      // 0. 判断无装甲，进入修车流程
-    If FindImage("无装甲.bmp", 500, 679, 633, 712, 0.95) Then
+    If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
         hasNotZj = true
         repair
         Exit Function
@@ -274,6 +258,7 @@ Function run()
     
     // 取消
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
     
     // 战斗结束掉落物处理
     If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
@@ -289,7 +274,6 @@ Function run()
     If FindAndPress("杀人阿米巴.bmp", 225, 75, 468, 167, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 3. 按下键
-    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "S", DELAY_NORMAL) Then Exit Function
     If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
     If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
     
@@ -309,6 +293,10 @@ Function run()
     If FindAndPress("战车下2.bmp", 620, 370, 670, 430, 0.95, "H", DELAY_NORMAL) Then Exit Function
     If FindAndPress("战车左2.bmp", 620, 380, 660, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
     If FindAndPress("战车右2.bmp", 620, 380, 655, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
+    If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
+        KeyPress "H", 1
+        Exit Function
+    End If
     
 End Function
 
