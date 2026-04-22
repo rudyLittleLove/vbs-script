@@ -8,9 +8,6 @@ Const DELAY_NORMAL = 20
 // 是否识别到闪光怪（战斗中有效，退出战斗后重置）
 Dim hasFlashDetected
 hasFlashDetected = False
-// 是否处于战斗中（减少重复识别）
-Dim inBattle
-inBattle = False
 // 是否已切换过武器（有闪光时只切换一次）
 Dim hasWeaponSwitched
 hasWeaponSwitched = False
@@ -177,34 +174,37 @@ End Function
 
 // ==================== 战斗状态检测 ====================
 
-// 检测是否处于战斗中
-Function checkInBattle()
+// 战斗状态：0=其他, 1=战斗中, 2=大地图
+Const STATE_OTHER = 0
+Const STATE_BATTLE = 1
+Const STATE_MAP = 2
+
+// 检测当前战斗状态（战斗中 / 大地图 / 其他）
+Function checkBattleState()
+    // 先检测是否在战斗中（右侧区域）
     Dim battleImg
     For Each battleImg In Array("战斗中战车.bmp", "战斗中战车2.bmp", "战斗中战车3.bmp")
         If FindImage(battleImg, 900, 100, 1300, 768, 0.9) Then
-            checkInBattle = True
+            checkBattleState = STATE_BATTLE
             Exit Function
         End If
     Next
-    checkInBattle = False
-End Function
-
-// 检测是否回到大地图（识别大地图战车 = 战斗真正结束）
-Function isBackToMap()
-    // 识别没有菜单栏，就是大地图
+    
+    // 再检测是否在大地图（无菜单栏 或 中间区域有战车）
     If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
-       isBackToMap = True
-       KeyPress "H", 1
-       Exit Function	
+        KeyPress "H", 1
+        checkBattleState = STATE_MAP
+        Exit Function
     End If
     Dim mapImg
     For Each mapImg In Array("战车上.bmp", "战车右.bmp", "战车左.bmp", "战车上3.bmp", "战车下.bmp", "战车上2.bmp", "战车下2.bmp", "战车左2.bmp", "战车右2.bmp")
         If FindImage(mapImg, 535, 369, 587, 421, 0.9) Then
-            isBackToMap = True
+            checkBattleState = STATE_MAP
             Exit Function
         End If
     Next
-    isBackToMap = False
+    
+    checkBattleState = STATE_OTHER
 End Function
 
 // 检测闪光（进入战斗时的闪光特效）
@@ -222,60 +222,31 @@ End Function
 // ==================== 主逻辑 ====================
 
 Function run()
+    // ====== 检测战斗状态 ======
+    Dim state
+    state = checkBattleState()
     
-    // ====== 掉落物处理（最优先）======
-    // 识别到放仓库选项，按S切换到"不要放"
-    If FindImage("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95) Then
-        KeyPress "S", 1
-        Delay DELAY_SHORT
-        Exit Function
-    End If
-    
-    // ====== 状态1：战斗中 ======
-    If inBattle Then
-        // 未识别到闪光时，持续识别（动态效果需要多次尝试）
+    // 战斗中：持续识别闪光（直到识别到或战斗结束），切换武器，按K攻击
+    If state = STATE_BATTLE Then
+        // 持续识别闪光，只要没识别到就一直尝试
         If Not hasFlashDetected Then
             If checkFlash() Then hasFlashDetected = True
         End If
-        
-        // 根据闪光状态切换武器
         switchWeaponInBattle
-        
-        // 检测到回到大地图 = 真正结束战斗
-        If isBackToMap() Then
-            hasFlashDetected = False
-            hasWeaponSwitched = False
-            inBattle = False
-            Exit Function
-        End If
-        
-        // 按K攻击（每轮循环都执行）
-        KeyPress "K", 1
-        Delay 50
-        
+        Press "K"
         Exit Function
     End If
     
-    // ====== 状态2：非战斗状态 ======
-    
-    // 检测是否进入战斗
-    If checkInBattle() Then
-        inBattle = True
-        hasWeaponSwitched = False  // 新战斗，重置切换状态
-        // 首次进入战斗，尝试识别闪光
-        If checkFlash() Then hasFlashDetected = True
-        // 切换武器
-        switchWeaponInBattle
-        // 按K攻击
-        KeyPress "K", 1
-        Delay 100
-        Exit Function
+    // 回到大地图：战斗真正结束，重置所有战斗状态
+    If state = STATE_MAP Then
+        hasFlashDetected = False
+        hasWeaponSwitched = False
     End If
     
     // ====== 正常打怪流程 ======
      // 0. 判断无装甲，进入修车流程
     If FindImage("无装甲.bmp", 500, 679, 633, 712, 0.95) Then
-    	hasNotZj = true
+        hasNotZj = true
         repair
         Exit Function
     End If
@@ -317,6 +288,7 @@ Function run()
     If FindAndPress("杀人阿米巴.bmp", 225, 75, 468, 167, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 3. 按下键
+    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "S", DELAY_NORMAL) Then Exit Function
     If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
     If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
     
