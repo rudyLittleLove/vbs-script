@@ -129,7 +129,6 @@ Function repair()
     		Press "K", 1, 300
     		PressHold "S", 500, 300
     		Press "D", 1, 100
-    		hasNotZj = false
     	End If
     
     // 对话加装甲（按K确定5次）
@@ -143,6 +142,8 @@ Function repair()
     Press "D", 2, 200
     // 按K确定
     Press "K", 1, 300
+
+    hasNotZj = false
 End Function
 
 // ==================== 武器切换 ====================
