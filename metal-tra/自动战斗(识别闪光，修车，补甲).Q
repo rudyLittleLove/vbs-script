@@ -40,31 +40,48 @@ Function FindImage(imgName, x1, y1, x2, y2, similarity)
     FindImage = (intX > 0)
 End Function
 
+// 点击按键指定次数，每次点击后延迟（默认延迟0）
+// 用法: Press "K"        -> 按1次K，无延迟
+//       Press "K", 3     -> 按3次K，无延迟
+//       Press "K", 3, 100 -> 按3次K，每次延迟100ms
+Function Press(key, count, delayMs)
+    Dim i
+    If IsMissing(count) Then count = 1
+    If IsMissing(delayMs) Then delayMs = 0
+    If count < 1 Then count = 1
+    If delayMs < 0 Then delayMs = 0
+    For i = 1 To count
+        KeyPress key, 1
+        If delayMs > 0 Then Delay delayMs
+    Next
+End Function
+
+// 长按指定按键，按住指定毫秒后松开
+// 用法: PressHold "D", 800       -> 按住D 800ms，松开后无延迟
+//       PressHold "D", 800, 100  -> 按住D 800ms，松开后延迟100ms
+Function PressHold(key, holdMs, delayMs)
+    If IsMissing(delayMs) Then delayMs = 0
+    If holdMs < 0 Then holdMs = 0
+    If delayMs < 0 Then delayMs = 0
+    KeyDown key, 1
+    If holdMs > 0 Then Delay holdMs
+    KeyUp key, 1
+    If delayMs > 0 Then Delay delayMs
+End Function
+
 // ==================== 补血 ====================
 
 Function jiaxue()
-    KeyPress "A", 1
-    KeyPress "W", 1
-    KeyPress "K", 1
-    Delay 100
-    KeyPress "S", 1
-    Delay 100
-    KeyPress "K", 1
-    Delay 100
-    KeyPress "S", 1
-    Delay 100
-    KeyPress "K", 1
-    Delay 100
-    KeyPress "K", 1
-    Delay 100
-    KeyPress "K", 1
-    Delay 100
-    KeyPress "K", 1
-    Delay 300
-    KeyPress "K", 1
-    Delay 300
-    KeyPress "K", 1
-    Delay 300
+    Press "A"
+    Press "W"
+    Press "K", 1, 100
+    Press "S", 1, 100
+    Press "K", 1, 100
+    Press "S", 1, 100
+    Press "K", 4, 100
+    Press "K", 1, 300
+    Press "K", 1, 300
+    Press "K", 1, 300
     KeyPress "J", 4
 End Function
 
@@ -76,40 +93,26 @@ Function repair()
     Delay 300
     
     If hasNotZj Then 
-    	KeyPress "E", 1
-    	Delay 100
-    	KeyPress "K", 1
-    	Delay 200
+    	Press "E", 1, 100
+    	Press "K", 1, 200
     End If
     
     // 2. 进入城镇
-    KeyPress "W", 1
-    Delay 1000
+    Press "W", 1, 1000
     // 3. 按键进入装甲片商铺
     // 向右移动（短按100ms）
-    KeyDown "D", 1
-    Delay 100
-    KeyUp "D", 1
+    PressHold "D", 100
     // 向下移动（持续800ms）
-    KeyDown "S", 1
-    Delay 800
-    KeyUp "S", 1
+    PressHold "S", 800
     // 向右移动（持续800ms）
-    KeyDown "D", 1
-    Delay 800
-    KeyUp "D", 1
+    PressHold "D", 800
     // 向上移动（持续600ms）
-    KeyDown "W", 1
-    Delay 600
-    KeyUp "W", 1
-    Delay 100
+    PressHold "W", 600, 100
     // 等待进入修理铺过度
     Delay 800
     // 对话让人让开（按K确定2次）
-    KeyPress "K", 1
-    Delay 500
-    KeyPress "K", 1
-    Delay 500
+    Press "K", 1, 500
+    Press "K", 1, 500
     // 向上移动（持续800ms）
     KeyDown "W", 1
     	If hasNotZj Then 
@@ -119,57 +122,30 @@ Function repair()
     	End If
     KeyUp "W", 1
     Delay 300
-    KeyPress "D", 1
-    Delay 200
+    Press "D", 1, 200
     	If hasNotZj Then 
-    		KeyPress "K", 1
-    		Delay 300
-    		KeyPress "S", 1
-    		Delay 300
-    		KeyPress "K", 1
-    		Delay 300
-    		KeyPress "K", 1
-    		Delay 300
-    		KeyPress "K", 1
-    		Delay 300
-    		KeyPress "J", 1
-    		Delay 300
-    		KeyPress "J", 1
-    		Delay 300
-    		KeyPress "J", 1
-    		Delay 300
-    		KeyPress "E", 1
-    		Delay 300
-    		KeyPress "K", 1
-    		Delay 300
-    		KeyDown "S", 1
-    		Delay 500
-    		KeyUp "S", 1
-    		Delay 300
-    		KeyPress "D", 1
-    		Delay 100
+    		Press "K", 1, 300
+    		Press "S", 1, 300
+    		Press "K", 3, 300
+    		Press "J", 3, 300
+    		Press "E", 1, 300
+    		Press "K", 1, 300
+    		PressHold "S", 500, 300
+    		Press "D", 1, 100
     		hasNotZj = false
     	End If
     
     // 对话加装甲（按K确定5次）
-    KeyPress "K", 1
-    Delay 300
-    KeyPress "K", 1
-    Delay 500
-    KeyPress "K", 1
-    Delay 500
-    KeyPress "K", 1
-    Delay 500
-    KeyPress "K", 1
-    Delay 500
-    KeyPress "R", 1
-    Delay 300
+    Press "K", 1, 300
+    Press "K", 1, 500
+    Press "K", 1, 500
+    Press "K", 1, 500
+    Press "K", 1, 500
+    Press "R", 1, 300
     // 向右选择按2次
-    KeyPress "D", 2
-    Delay 200
+    Press "D", 2, 200
     // 按K确定
-    KeyPress "K", 1
-    Delay 300
+    Press "K", 1, 300
 End Function
 
 // ==================== 武器切换 ====================
@@ -186,18 +162,15 @@ Function switchWeaponInBattle()
     
     // 有闪光怪且当前是副炮 → 切换主炮（只切换一次）
     If hasFlashDetected And Not hasWeaponSwitched And FindImage("副炮.bmp", 245, 440, 305, 475, 0.9) Then
-        KeyPress "W", 1
-        Delay 100
+        Press "W", 1, 100
         hasWeaponSwitched = True
         Exit Function
     End If
     
     // 无闪光怪且当前是主炮 → 切换副炮
     If Not hasFlashDetected And FindImage("主炮.bmp", 250, 445, 305, 470, 0.9) Then
-        KeyPress "W", 1
-        Delay 100
-        KeyPress "S", 1
-        Delay 100
+        Press "W", 1, 100
+        Press "S", 1, 100
         Exit Function
     End If
 End Function
