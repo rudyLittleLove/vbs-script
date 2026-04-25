@@ -85,7 +85,7 @@ Function repair()
     End If
     
     // 2. 进入城镇
-    Press "W", 1, 1000
+    Press "W", 1, 1500
     // 3. 按键进入装甲片商铺
     // 向右移动（短按100ms）
     PressHold "D", 100
