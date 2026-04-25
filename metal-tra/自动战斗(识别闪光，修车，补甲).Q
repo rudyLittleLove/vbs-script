@@ -195,7 +195,7 @@ End Function
 // 检测闪光（进入战斗时的闪光特效）
 Function checkFlash()
     Dim flashImg
-    For Each flashImg In Array("闪光1.bmp", "闪光2.bmp", "闪光3.bmp", "闪光4.bmp", "闪光5.bmp", "闪光6.bmp")
+    For Each flashImg In Array("闪光1.bmp", "闪光2.bmp", "闪光3.bmp", "闪光4.bmp", "闪光5.bmp", "闪光6.bmp", "闪光7.bmp", "闪光8.bmp", "闪光9.bmp", "闪光10.bmp")
         If FindImage(flashImg, 148, 131, 616, 425, 0.9) Then
             checkFlash = True
             Exit Function
