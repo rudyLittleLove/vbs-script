@@ -168,26 +168,30 @@ Const STATE_MAP = 2
 // 检测当前战斗状态（战斗中 / 大地图 / 其他）
 Function checkBattleState()
     // 先检测是否在战斗中（右侧区域）
-    Dim battleImg
-    For Each battleImg In Array("战斗中战车.bmp", "战斗中战车2.bmp", "战斗中战车3.bmp")
-        If FindImage(battleImg, 900, 100, 1300, 768, 0.9) Then
-            checkBattleState = STATE_BATTLE
-            Exit Function
-        End If
-    Next
+//    Dim battleImg
+//    For Each battleImg In Array("战斗中战车.bmp", "战斗中战车2.bmp", "战斗中战车3.bmp")
+//        If FindImage(battleImg, 900, 100, 1300, 768, 0.9) Then
+//            checkBattleState = STATE_BATTLE
+//            Exit Function
+//        End If
+//    Next
+	If FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then 
+    	checkBattleState = STATE_BATTLE
+    	Exit Function
+	End If
     
     // 再检测是否在大地图（无菜单栏 或 中间区域有战车）
     If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
         checkBattleState = STATE_MAP
         Exit Function
     End If
-    Dim mapImg
-    For Each mapImg In Array("战车上.bmp", "战车右.bmp", "战车左.bmp", "战车上3.bmp", "战车下.bmp", "战车上2.bmp", "战车下2.bmp", "战车左2.bmp", "战车右2.bmp")
-        If FindImage(mapImg, 535, 369, 587, 421, 0.9) Then
-            checkBattleState = STATE_MAP
-            Exit Function
-        End If
-    Next
+//    Dim mapImg
+//    For Each mapImg In Array("战车上.bmp", "战车右.bmp", "战车左.bmp", "战车上3.bmp", "战车下.bmp", "战车上2.bmp", "战车下2.bmp", "战车左2.bmp", "战车右2.bmp")
+//        If FindImage(mapImg, 535, 369, 587, 421, 0.9) Then
+//            checkBattleState = STATE_MAP
+//            Exit Function
+//        End If
+//    Next
     
     checkBattleState = STATE_OTHER
 End Function
@@ -259,6 +263,7 @@ Function run()
     // 取消
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     
     // 战斗结束掉落物处理
     If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
@@ -266,14 +271,14 @@ Function run()
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 确定诱敌
-    If FindAndPress("蒲公英.bmp", 224, 222, 463, 265, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("飞刀鱼.bmp", 223, 76, 390, 125, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    //If FindAndPress("蒲公英.bmp", 224, 222, 463, 265, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    //If FindAndPress("飞刀鱼.bmp", 223, 76, 390, 125, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("行商杀手.bmp", 220, 272, 430, 318, 0.95, "K", DELAY_NORMAL) Then Exit Function
     // If FindAndPress("影像蝙蝠.bmp", 220, 315, 435, 368, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("沙地蚁.bmp", 225, 275, 389, 315, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("陨石蜗牛.bmp", 225, 275, 430, 515, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("爆破龟.bmp", 210, 350, 430, 445, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("杀人阿米巴.bmp", 225, 75, 468, 167, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("沙地蚁.bmp", 225, 275, 389, 315, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("陨石蜗牛.bmp", 225, 275, 430, 515, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("爆破龟.bmp", 210, 350, 430, 445, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("杀人阿米巴.bmp", 225, 75, 468, 167, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 3. 按下键
     If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
@@ -286,15 +291,15 @@ Function run()
     If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
     
     // 2. 大地图中打开菜单
-    If FindAndPress("战车上.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车右.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车左.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车上3.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车下.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车上2.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车下2.bmp", 620, 370, 670, 430, 0.95, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车左2.bmp", 620, 380, 660, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("战车右2.bmp", 620, 380, 655, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车上.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车右.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车左.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车上3.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车下.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车上2.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车下2.bmp", 620, 370, 670, 430, 0.95, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车左2.bmp", 620, 380, 660, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
+    // If FindAndPress("战车右2.bmp", 620, 380, 655, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
     If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
         KeyPress "H", 1
         Exit Function
