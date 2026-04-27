@@ -117,7 +117,8 @@ Function repair()
     
     // 对话加装甲
     Press "K", 1, 300
-    Press "K", 4, 500
+    Press "K", 2, 500
+    Press "J", 2, 500
     Press "R", 1, 300
     Press "D", 2, 200
     Press "K", 1, 300
@@ -205,12 +206,13 @@ End Function
 Function run()
     Dim state
     state = checkBattleState()
-    If FindImage("主炮.bmp", 250, 445, 305, 470, 0.9) And FindImage("弹药少.bmp", 712, 429, 719, 480, 0.95) Then 
+    If Not danyaoshao And FindImage("主炮.bmp", 250, 445, 305, 470, 0.9) And FindImage("弹药少.bmp", 712, 429, 719, 480, 0.95) Then 
     	danyaoshao = true
     End If
     
     // ====== 修车/补血/补甲（最优先）======
     If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
+        danyaoshao = false
         hasNotZj = True
         repair
         Exit Function
@@ -304,13 +306,13 @@ Function run()
         If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
         If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
         
-        If FindAndPress("蒲公英.bmp", 224, 222, 463, 265, 0.95, "K", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("飞刀鱼.bmp", 223, 76, 390, 125, 0.95, "K", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("蒲公英.bmp", 224, 222, 463, 265, 0.95, "K", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("飞刀鱼.bmp", 223, 76, 390, 125, 0.95, "K", DELAY_NORMAL) Then Exit Function
         If FindAndPress("行商杀手.bmp", 220, 272, 430, 318, 0.95, "K", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("沙地蚁.bmp", 225, 275, 389, 315, 0.95, "K", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("陨石蜗牛.bmp", 225, 275, 430, 515, 0.95, "K", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("爆破龟.bmp", 210, 350, 430, 445, 0.95, "K", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("杀人阿米巴.bmp", 225, 75, 468, 167, 0.95, "K", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("沙地蚁.bmp", 225, 275, 389, 315, 0.95, "K", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("陨石蜗牛.bmp", 225, 275, 430, 515, 0.95, "K", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("爆破龟.bmp", 210, 350, 430, 445, 0.95, "K", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("杀人阿米巴.bmp", 225, 75, 468, 167, 0.95, "K", DELAY_NORMAL) Then Exit Function
         
         If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
         If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
@@ -318,15 +320,15 @@ Function run()
         If FindAndPress("诱饵.bmp", 207, 584, 483, 628, 1.0, "W", DELAY_SHORT) Then Exit Function
         If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
         
-        If FindAndPress("战车上.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车右.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车左.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车上3.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车下.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车上2.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车下2.bmp", 620, 370, 670, 430, 0.95, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车左2.bmp", 620, 380, 660, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
-        If FindAndPress("战车右2.bmp", 620, 380, 655, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车上.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车右.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车左.bmp", 610, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车上3.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车下.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车上2.bmp", 620, 370, 670, 430, 0.9, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车下2.bmp", 620, 370, 670, 430, 0.95, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车左2.bmp", 620, 380, 660, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
+        ' If FindAndPress("战车右2.bmp", 620, 380, 655, 415, 0.95, "H", DELAY_NORMAL) Then Exit Function
         If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
             KeyPress "H", 1
             Exit Function
