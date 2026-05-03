@@ -125,7 +125,8 @@ Function repair()
     
     // 对话加装甲（按K确定5次）
     Press "K", 1, 300
-    Press "K", 4, 500
+    Press "K", 2, 500
+    Press "J", 2, 500
     
     // 重新进入地道
     PressHold "S", 1060
@@ -247,6 +248,12 @@ End Function
 // ==================== 主逻辑 ====================
 
 Function run()
+	If FindImage("此处无怪.bmp", 211, 586, 321, 629, 1) Then
+        Press "J", 4, 300
+        repair
+        Exit Function
+    End If
+
     // ====== 检测战斗状态 ======
     Dim state
     state = checkBattleState()
@@ -342,6 +349,7 @@ Function run()
         KeyPress "H", 1
         Exit Function
     End If
+    
     
 End Function
 
