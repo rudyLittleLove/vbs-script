@@ -126,7 +126,7 @@ Function repair()
     // 对话加装甲（按K确定5次）
     Press "K", 1, 300
     Press "K", 2, 500
-    Press "J", 2, 500
+    Press "J", 4, 500
     
     // 重新进入地道
     PressHold "S", 1060
@@ -284,7 +284,7 @@ Function run()
     End If
     
     // 0. 判断装甲少，进入补装甲流程
-    If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Then
+    If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Or FindImage("装甲少2.bmp", 658, 689, 753, 706, 0.95) Then
         repair
         Exit Function
     End If
@@ -306,7 +306,7 @@ Function run()
     
     // 取消
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬.bmp", 760, 350, 960, 470, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     
     // 战斗结束掉落物处理
