@@ -5,9 +5,6 @@ Const DELAY_SHORT = 10
 Const DELAY_NORMAL = 20
 
 // ==================== 全局状态变量 ====================
-// 是否无装甲
-Dim hasNotZj
-hasNotZj = False
 // 是否无炮弹
 Dim hasNotPd
 hasNotPd= False
@@ -55,6 +52,17 @@ Function PressHold(key, holdMs)
     KeyUp key, 1
 End Function
 
+// 检测闪光（进入战斗时的闪光特效）
+Function checkFlash()
+    Dim flashImg
+    For Each flashImg In Array("闪光1.bmp", "闪光2.bmp", "闪光3.bmp", "闪光4.bmp", "闪光5.bmp", "闪光6.bmp", "闪光7.bmp", "闪光8.bmp", "闪光9.bmp", "闪光10.bmp")
+        If FindImage(flashImg, 148, 131, 616, 425, 0.9) Then
+            KeyPress "F12", 1
+            Exit Function
+        End If
+    Next
+End Function
+
 // ==================== 补装甲流程 ====================
 
 Function repair()
@@ -63,62 +71,27 @@ Function repair()
     Delay 300
     
     Press "R", 1, 300
-    Press "D", 2, 100
-    Press "K", 1, 2000
+    Press "S", 1, 100
+    Press "K", 1, 1000
     
-    If hasNotZj Then 
-    	Press "E", 1, 100
-    	Press "K", 1, 200
-    End If
-    
-    // 2. 进入城镇
-    Press "W", 1, 1500
-    // 3. 按键进入装甲片商铺
-    // 向右移动（短按100ms）
-    PressHold "D", 100
-    // 向下移动（持续800ms）
-    PressHold "S", 800
-    // 向右移动（持续800ms）
-    PressHold "D", 800
-    // 向上移动（持续600ms）
-    PressHold "W", 600
-    // 等待进入修理铺过度
-    Delay 800
-    // 对话让人让开（按K确定2次）
-    Press "K", 2, 500
-    // 向上移动（持续800ms）
-    If hasNotZj Then 
-        PressHold "W", 1400
-    Else 
-        PressHold "W", 800
-    End If
-    Delay 300
-    Press "D", 1, 200
-    	If hasNotZj Then 
-    		Press "K", 1, 300
-    		Press "S", 1, 300
-    		Press "K", 3, 300
-    		Press "J", 3, 300
-    		Press "E", 1, 300
-    		Press "K", 1, 300
-    		PressHold "S", 500
-    		Delay 300
-    		Press "D", 1, 100
-    	End If
-    
-    // 对话加装甲（按K确定5次）
-    Press "K", 1, 300
-    Press "K", 2, 500
-    Press "J", 4, 500
+   	PressHold "W", 100
+	Delay 1300
+	PressHold "W", 800
+	PressHold "A", 300
+	Delay 500
+	PressHold "A", 700
+	Delay 100
+	Press "W", 1, 200
+	Press "K", 3, 500
+	Press "J", 3, 400
     
     // 传送回四镇
     Press "R", 1, 300
     Press "S", 1, 100
-    Press "K", 1, 8000
+    Press "K", 1, 6000
     // 重新进入诱侦查蜂
     PressHold "S", 1500
 	PressHold "A", 940
-    hasNotZj = false
 End Function
 
 // ==================== 战斗状态检测 ====================
@@ -163,25 +136,41 @@ Function run()
         Press "A", 1, 100
         Press "K", 1, 100
         Exit Function
-    ElseIf FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then
-    	If FindImage("河马.bmp", 151, 125, 601, 435, 1) Then 
-    
-    	End If
-    	Press "K", 1, 0
-    	Exit Function
     End If
     
-    // ====== 正常打怪流程 ======
-     // 0. 判断无装甲，进入修车流程
-    If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
-        hasNotZj = true
-        repair
+     // 怪物出现了
+    If FindImage("怪物出现了.bmp", 336, 585, 500, 626, 0.95) Then
+        Press "J", 2, 100
+        Press "A", 2, 100
+        Press "K", 2, 100
+        Press "A", 2, 100
+        Press "K", 2, 100
         Exit Function
     End If
     
+    If FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then
+    	If FindImage("主炮选敌人.bmp", 373, 518, 420, 541, 0.95) Then 
+    		Press "S", 2, 100
+    	End If
+    	checkFlash
+    	Press "K", 1, 20
+    	Exit Function
+    End If
+    
+    // ====== 正常打怪流程 =====
     // 0. 判断装甲少，进入补装甲流程
     If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Or FindImage("装甲少2.bmp", 658, 689, 753, 706, 0.95) Then
         repair
+        Exit Function
+    End If
+
+    // 1. 诱河马
+    If FindImage("手指_特技.bmp",  309, 584, 490, 664, 0.9) Then
+        Press "K", 2, 100
+        Press "S", 1, 100
+        Press "K", 1, 100
+        Press "W", 3, 100
+        Press "K", 3, 100
         Exit Function
     End If
 
@@ -194,6 +183,8 @@ Function run()
     If FindAndPress("诱敌.bmp", 227, 214, 451, 260, 0.95, "K", DELAY_NORMAL) Then Exit Function
 //    If FindAndPress("手指_诱敌.bmp", 200, 200, 620, 430, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("去寻找怪.bmp", 400, 500, 760, 600, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("发现45炮.bmp", 343, 585, 482, 674, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("发现45炮2.bmp", 316, 547, 454, 582, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 取消
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
