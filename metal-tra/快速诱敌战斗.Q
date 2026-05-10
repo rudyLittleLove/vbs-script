@@ -29,11 +29,24 @@ Function run()
     	Press "K", 2, 100
         Press "S", 1, 100
         Press "K", 1, 100
-        Press "W", 2, 100
+        Press "W", 1, 100
         Press "K", 3, 100
     	Exit Function
 	End If
     KeyPress "K", 1
+    
+    If FindImage("血条0.bmp",342, 601, 471, 606, 1) Then 
+		KeyDown "Ctrl", 1
+		KeyDown "Alt", 1
+		KeyDown "3", 1
+		Delay 300
+		KeyUp "Ctrl", 1
+		KeyUp "Alt", 1
+		KeyUp "3", 1
+		KeyPress "F12", 1
+
+        TracePrint "检测到闪光怪，退出脚本！"    
+    End If
 End Function
 
 // ==================== 入口 ====================

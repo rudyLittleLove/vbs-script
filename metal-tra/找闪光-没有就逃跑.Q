@@ -2,15 +2,6 @@
 Const IMAGE_PATH = "D:\workspace\vbs-script\images\"
 Const DELAY_SHORT = 10
 Const DELAY_NORMAL = 20
-// 倍速：1=正常, 2=2倍速, 5=5倍速, 10=10倍速
-Const SPEED = 4
-
-// ==================== 全局状态变量 ====================
-Dim hasFlashDetected
-hasFlashDetected = False
-// 0=大地图, 1=战斗中, 2=识别闪光中, 3=逃跑中
-Dim currentState
-currentState = 0
 
 // ==================== 辅助函数 ====================
 
@@ -21,39 +12,15 @@ Function FindImage(imgName, x1, y1, x2, y2, similarity)
     FindImage = (intX > 0)
 End Function
 
-// 点击按键count次，每次延迟delayMs（延迟会除以倍速）
+// 点击按键count次，每次延迟delayMs
 Function Press(key, count, delayMs)
     Dim i
     If count < 1 Then count = 1
     If delayMs < 0 Then delayMs = 0
     For i = 1 To count
         KeyPress key, 1
-        If delayMs > 0 Then Delay delayMs / SPEED
+        If delayMs > 0 Then Delay delayMs
     Next
-End Function
-
-// 检测当前是否在战斗中
-Function isInBattle()
-    Dim battleImg
-    For Each battleImg In Array("战斗中战车.bmp", "战斗中战车2.bmp", "战斗中战车3.bmp")
-        If FindImage(battleImg, 900, 100, 1300, 768, 0.9) Then
-            isInBattle = True
-            Exit Function
-        End If
-    Next
-    isInBattle = False
-End Function
-
-// 检测是否在大地图
-Function isOnMap()
-    Dim mapImg
-    For Each mapImg In Array("战车上.bmp", "战车右.bmp", "战车左.bmp", "战车上3.bmp", "战车下.bmp", "战车上2.bmp", "战车下2.bmp", "战车左2.bmp", "战车右2.bmp")
-        If FindImage(mapImg, 609, 368, 673, 422, 0.9) Then
-            isOnMap = True
-            Exit Function
-        End If
-    Next
-    isOnMap = False
 End Function
 
 // 检测闪光（进入战斗时的闪光特效）
@@ -68,102 +35,96 @@ Function checkFlash()
     checkFlash = False
 End Function
 
+// 战斗中根据闪光状态切换武器（有闪光只切换一次）
+Function switchWeaponInBattle(flash)
+    // 有闪光怪且当前是副炮 → 切换主炮（只切换一次）
+    If flash And FindImage("副炮.bmp", 245, 440, 305, 475, 0.9) Then
+        Press "W", 1, 100
+        hasWeaponSwitched = True
+        Exit Function
+    End If
+    
+    // 无闪光怪且当前是主炮 → 切换副炮
+    If Not flash And FindImage("主炮.bmp", 250, 445, 305, 470, 0.9) Then
+        Press "W", 1, 100
+        Press "S", 1, 100
+        Exit Function
+    End If
+End Function
+
 // ==================== 逃跑流程 ====================
+// 持续尝试逃跑直到离开战斗（检测到大世界）
 Function doEscape()
-    Press "J", 2, 60
-    Press "A", 1, 50
-    Press "K", 2, 50
+    Do
+        // 如果已经在大地图了，说明逃跑成功
+        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
+            Exit Do
+            Exit Function
+        End If
+        
+        // 在攻击菜单界面 → 执行逃跑指令
+        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+            Press "A", 1, 100
+            Press "K", 1, 200
+            Press "A", 1, 100
+            Press "K", 1, 2000
+        End If
+        Delay 500
+    Loop
+End Function
+
+// 检测到闪光，停止运行
+Function stopRun() 
+    KeyDown "Ctrl", 1
+    KeyDown "Alt", 1
+    KeyDown "3", 1
+    Delay 300
+    KeyUp "Ctrl", 1
+    KeyUp "Alt", 1
+    KeyUp "3", 1
+
+    TracePrint "检测到闪光怪，退出脚本！"
+    KeyPress "F12", 1
+    ExitScript
 End Function
 
 // ==================== 诱敌流程 ====================
 Function doBait()
-    Press "H", 1, 40
     Press "K", 2, 40
     Press "S", 1, 40
     Press "K", 1, 40
-    Press "W", 1, 40
+    Press "S", 2, 40 // 切换上下选怪-------------------------------------------------------------------------------
     Press "K", 2, 350
-    Press "K", 1, 1500
+    Press "K", 1, 800
+    For i = 1 To 20
+        If checkFlash() Then
+            // 有闪光，切换武器
+            // switchWeaponInBattle(True)
+            // 有闪光，停止运行
+            stopRun
+            Exit For
+        End If
+        Delay 15
+    Next
     Press "K", 1, 40
+    // 无闪光，切换武器
+    // switchWeaponInBattle(False)
+    // 无闪光，逃跑
+    doEscape
 End Function
 
 // ==================== 主逻辑 ====================
 
 Function run()
-    // 检测到闪光，退出脚本
-    If hasFlashDetected Then 
-    	KeyDown "Ctrl", 1
-		KeyDown "Alt", 1
-		KeyDown "3", 1
-		Delay 300
-		KeyUp "Ctrl", 1
-		KeyUp "Alt", 1
-		KeyUp "3", 1
-
-        TracePrint "检测到闪光怪，退出脚本！"
-        ExitScript
-    End If
-
-    // 状态0：大地图 → 执行诱敌
-    If currentState = 0 Then
-        If isOnMap() Then
-            doBait
-            currentState = 1
-        End If
+    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
+        doBait
         Exit Function
     End If
 
-    // 状态1：刚进入战斗 → 切到识别状态
-    If currentState = 1 Then
-        If isInBattle Then
-            currentState = 2
-        Else
-            // 战斗已结束，回到大地图
-            currentState = 0
-        End If
+    If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
+        Press "h", 1, 100
         Exit Function
-    End If
-
-    // 状态3：逃跑中 → 检测是否回到大地图
-    If currentState = 3 Then
-        If isOnMap() Then
-            // 逃跑成功，回到大地图
-            currentState = 0
-        ElseIf isInBattle Then
-            // 逃跑失败，仍在战斗，继续逃跑
-            TracePrint "逃跑失败，继续逃跑"
-            doEscape
-        End If
-        Exit Function
-    End If
-
-    // 状态2：识别闪光中 → 持续检测1秒
-    If currentState = 2 Then
-        If Not isInBattle Then
-            currentState = 0
-            Exit Function
-        End If
-
-        Dim hasFlash
-        hasFlash = False
-        Dim i
-        For i = 1 To 10
-            If checkFlash() Then
-                hasFlash = True
-                Exit For
-            End If
-            Delay 15
-        Next
-
-        If hasFlash Then
-            hasFlashDetected = True
-        Else
-            TracePrint "未检测到闪光，执行逃跑"
-            doEscape
-            currentState = 3
-        End If
-        Exit Function
-    End If
+	End If
 End Function
 
 // ==================== 入口 ====================
