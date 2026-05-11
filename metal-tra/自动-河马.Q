@@ -7,7 +7,15 @@ Const DELAY_NORMAL = 20
 // ==================== 全局状态变量 ====================
 // 是否无炮弹
 Dim hasNotPd
-hasNotPd= False
+hasNotPd = False
+
+// 是否掉落45 炮
+Dim has45
+has45 = False
+
+// 是否存档
+Dim saveNum
+saveNum = 0
 
 // ==================== 辅助函数 ====================
 
@@ -66,9 +74,48 @@ Function checkFlash()
     Next
 End Function
 
+Function loading()
+	Do
+    	If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then 
+    		Exit Function
+			Exit Do 	
+    	End If
+		Delay 1000    
+    Loop
+End Function
+
+Function Save()
+    // 1. 取消
+    KeyPress "J", 3
+    Delay 300
+    
+	Press "R", 1, 137
+	Press "D", 2, 100
+	Press "K", 1, 1000
+	
+	loading 
+	
+	// 2. 进入城镇
+	Press "W", 1, 1500
+	PressHold "D", 100
+	PressHold "S", 1000
+	PressHold "D", 1150
+	PressHold "S", 700
+	PressHold "D", 1063
+	PressHold "W", 395
+	Delay 969
+	PressHold "W", 220
+	PressHold "D", 2700
+	PressHold "W", 700
+	Press "K", 14, 500
+	Press "J", 5, 100
+	saveNum = 0
+End Function
+
 // ==================== 补装甲流程 ====================
 
 Function repair()
+	saveNum = saveNum + 1
     // 1. 取消
     KeyPress "J", 3
     Delay 300
@@ -76,6 +123,8 @@ Function repair()
     Press "R", 1, 300
     Press "S", 1, 100
     Press "K", 1, 1000
+    
+    loading
     
    	PressHold "W", 100
 	Delay 1300
@@ -88,14 +137,55 @@ Function repair()
 	Press "K", 3, 500
 	Press "J", 3, 400
 	
+	If saveNum >= 10 Then 
+		Save
+	End If
+	
 	start
+End Function
+
+Function cun()
+    // 1. 取消
+    KeyPress "J", 3
+    Delay 300
+    
+	Press "R", 1, 137
+	Press "K", 1, 1000
+	loading 
+	
+//	拆卸装甲片
+	Press "W", 1, 1000
+	Press "K", 1, 500
+	Press "J", 3, 300
+	
+	// 2. 进入城镇
+	Press "W", 1, 1500
+	PressHold "W", 812
+	PressHold "D", 233
+	Press "W", 1, 100
+	Delay 500
+	PressHold "W", 2500
+	PressHold "A", 944
+	Press "K", 1, 100
+	Delay 800
+	Press "S", 1, 119
+	Press "K", 2, 200
+	Press "S", 2, 118
+	Press "K", 1, 116
+	Press "N", 1, 448
+	Press "K", 2, 200
+	Press "J", 2, 200
+	Press "J", 1, 600
+	Press "J", 3, 200
+	repair
 End Function
 
 Function start()
 	// 传送回四镇
     Press "R", 1, 300
     Press "S", 1, 100
-    Press "K", 1, 6000
+    Press "K", 1, 1000
+    loading
     // 重新进入诱侦查蜂
     PressHold "S", 1500
 	PressHold "A", 940
@@ -107,6 +197,15 @@ End Function
 // ==================== 主逻辑 ====================
 
 Function run()
+
+    If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) And FindImage("45mm列鹿.bmp", 763, 356, 915, 395, 0.95)  Then 
+    	Press "K", 2, 200
+    	Press "J", 2, 200
+        has45 = True
+    End If
+    
+    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
+
 	If FindImage("此处无怪.bmp", 211, 586, 321, 629, 1) Then
         Press "J", 4, 300
         repair
@@ -124,8 +223,21 @@ Function run()
         Exit Function
     End If
     
+    // 战斗中装甲少
+    If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+    	If FindImage("SP_LOW_1.bmp", 342, 582, 435, 606, 0.98) Or FindImage("SP_LOW_2.bmp", 342, 676, 437, 700, 0.98) Then
+        	hasNotPd = true
+        	Press "J", 1, 100
+        	Press "A", 1, 100
+        	Press "K", 1, 100
+        	Press "A", 1, 100
+        	Press "K", 1, 100
+        	Exit Function
+    	End If
+	End If
+    
      // 怪物出现了
-    If FindImage("怪物出现了.bmp", 336, 585, 500, 626, 0.95) Then
+    If FindImage("巡逻蜂出现.bmp", 217, 586, 455, 597, 0.98) Then
         Press "J", 2, 100
         Press "A", 2, 100
         Press "K", 2, 100
@@ -152,6 +264,16 @@ Function run()
         repair
         Exit Function
     End If
+    
+    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
+        Press "K", 2, 100
+    	Press "S", 1, 100
+    	Press "K", 1, 100
+    	Press "W", 3, 100 // 切换上下选怪-------------------------------------------------------------------------------
+    	Press "K", 2, 350
+    	Press "K", 1, 800
+        Exit Function
+    End If
 
 
     // 1. 按确定键（多张图在不同区域分别查找）
@@ -167,13 +289,15 @@ Function run()
     
     // 取消
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选猎鹿犬.bmp", 760, 350, 960, 470, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬.bmp", 760, 350, 960, 470, 0.95, "J", 200) Then Exit Function
+    If FindAndPress("45mm列鹿.bmp", 763, 356, 915, 395, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("放入.bmp", 321, 593, 385, 628, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("菜单钉.bmp", 256, 506, 275, 524, 1, "J", DELAY_NORMAL) Then Exit Function
     
     // 战斗结束掉落物处理
     If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 确定诱敌
@@ -190,22 +314,39 @@ Function run()
     If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
     
     // 2. 大地图中打开菜单
-    If FindImage("大地图.bmp", 561, 45, 599, 51, 1)  Then 
+    If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then 
+    	For i = 1 To 10
+        	If  FindImage("菜单钉.bmp", 256, 506, 275, 524, 1) Then
+            	Exit Function
+            	Exit For
+        	End If
+        	Delay 20
+    	Next
+    	
+    	If has45 Then
+    		has45 = false
+    		cun 
+    		Exit Function
+    	End If
+    	
     	If hasNotPd Then 
     	    hasNotPd  = false
     		repair 
-    	Else
-	    	KeyPress "H", 1
-    	End If
-        Exit Function
+    		Exit Function
+    	End If 
+	    KeyPress "H", 1  
+    Exit Function
     End If
     
     
 End Function
 
 // ==================== 入口 ====================
-If Not FindImage("大地图.bmp", 561, 45, 599, 51, 1) And Not FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95)
-    start
+If Not FindImage("大地图.bmp", 561, 45, 599, 51, 1)  And Not FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95)  Then 
+	Delay 200
+	If Not FindImage("菜单钉.bmp", 256, 506, 275, 524, 1)  Then 
+    	start 		
+    End If
 End If
 Do
     run
