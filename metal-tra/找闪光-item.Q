@@ -32,5 +32,5 @@ Do
         TracePrint "未检测到闪光"
     End If
     
-    Delay 100
+    Delay 15
 Loop
