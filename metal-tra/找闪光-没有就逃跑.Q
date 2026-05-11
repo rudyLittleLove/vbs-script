@@ -83,6 +83,11 @@ Function stopRun()
     KeyUp "Alt", 1
     KeyUp "3", 1
 
+	
+    KeyPress 175, 20
+    Delay 2000
+    KeyPress 174, 20
+
     TracePrint "检测到闪光怪，退出脚本！"
     KeyPress "F12", 1
     ExitScript
@@ -93,7 +98,7 @@ Function doBait()
     Press "K", 2, 40
     Press "S", 1, 40
     Press "K", 1, 40
-    Press "S", 2, 40 // 切换上下选怪-------------------------------------------------------------------------------
+    Press "W", 2, 40 // 切换上下选怪-------------------------------------------------------------------------------
     Press "K", 2, 350
     Press "K", 1, 800
     For i = 1 To 20
