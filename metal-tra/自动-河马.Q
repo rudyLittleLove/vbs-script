@@ -57,7 +57,10 @@ Function checkFlash()
     Dim flashImg
     For Each flashImg In Array("闪光1.bmp", "闪光2.bmp", "闪光3.bmp", "闪光4.bmp", "闪光5.bmp", "闪光6.bmp", "闪光7.bmp", "闪光8.bmp", "闪光9.bmp", "闪光10.bmp")
         If FindImage(flashImg, 148, 131, 616, 425, 0.9) Then
-            KeyPress "F12", 1
+            Press "F12",2, 100
+            KeyPress 175, 20
+    		Delay 1000
+    		KeyPress 174, 20
             Exit Function
         End If
     Next
@@ -84,8 +87,12 @@ Function repair()
 	Press "W", 1, 200
 	Press "K", 3, 500
 	Press "J", 3, 400
-    
-    // 传送回四镇
+	
+	start
+End Function
+
+Function start()
+	// 传送回四镇
     Press "R", 1, 300
     Press "S", 1, 100
     Press "K", 1, 6000
@@ -96,27 +103,6 @@ End Function
 
 // ==================== 战斗状态检测 ====================
 
-// 战斗状态：0=其他, 1=战斗中, 2=大地图
-Const STATE_OTHER = 0
-Const STATE_BATTLE = 1
-Const STATE_MAP = 2
-
-// 检测当前战斗状态（战斗中 / 大地图 / 其他）
-Function checkBattleState()
-    // 先检测是否在战斗中（右侧区域）
-    If FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then 
-    	checkBattleState = STATE_BATTLE
-    	Exit Function
-	End If
-    
-    // 再检测是否在大地图（无菜单栏 或 中间区域有战车）
-    If Not FindImage("菜单栏.bmp", 508, 742, 780, 771, 1) Then
-        checkBattleState = STATE_MAP
-        Exit Function
-    End If
-    
-    checkBattleState = STATE_OTHER
-End Function
 
 // ==================== 主逻辑 ====================
 
@@ -152,25 +138,18 @@ Function run()
     	If FindImage("主炮选敌人.bmp", 373, 518, 420, 541, 0.95) Then 
     		Press "S", 2, 100
     	End If
-    	checkFlash
+    	If FindImage("副炮选敌人.bmp", 376, 518, 417, 538, 0.95) Then 
+    		Press "W", 2, 100
+    	End If
+//    	checkFlash
     	Press "K", 1, 20
     	Exit Function
     End If
     
     // ====== 正常打怪流程 =====
     // 0. 判断装甲少，进入补装甲流程
-    If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Or FindImage("装甲少2.bmp", 658, 689, 753, 706, 0.95) Then
+    If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.97) Or FindImage("装甲少2.bmp", 658, 689, 753, 706, 0.97) Then
         repair
-        Exit Function
-    End If
-
-    // 1. 诱河马
-    If FindImage("手指_特技.bmp",  309, 584, 490, 664, 0.9) Then
-        Press "K", 2, 100
-        Press "S", 1, 100
-        Press "K", 1, 100
-        Press "W", 3, 100
-        Press "K", 3, 100
         Exit Function
     End If
 
@@ -183,8 +162,8 @@ Function run()
     If FindAndPress("诱敌.bmp", 227, 214, 451, 260, 0.95, "K", DELAY_NORMAL) Then Exit Function
 //    If FindAndPress("手指_诱敌.bmp", 200, 200, 620, 430, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("去寻找怪.bmp", 400, 500, 760, 600, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("发现45炮.bmp", 343, 585, 482, 674, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("发现45炮2.bmp", 316, 547, 454, 582, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    //If FindAndPress("发现45炮.bmp", 343, 585, 482, 674, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    //If FindAndPress("发现45炮2.bmp", 316, 547, 454, 582, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 取消
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
@@ -225,6 +204,9 @@ Function run()
 End Function
 
 // ==================== 入口 ====================
+If Not FindImage("大地图.bmp", 561, 45, 599, 51, 1) And Not FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95)
+    start
+End If
 Do
     run
     Delay 5
