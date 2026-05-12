@@ -113,6 +113,10 @@ Function DoRepairArmor()
     KeyPress "J", 3
     Delay 300
 
+    Press "R", 1, 300
+    Press "D", 2, 100
+    Press "K", 1, 8000
+
     If hasNotZj Then
     	Press "E", 1, 100
     	Press "K", 1, 200
@@ -126,19 +130,18 @@ Function DoRepairArmor()
     PressHold "D", 800
     PressHold "W", 600
     Delay 800
-    Press "K", 1, 100
-    Press "J", 4, 300
+    Press "K", 2, 500
 
     If hasNotZj Then
-        PressHold "W", 1300
+        PressHold "W", 1400
     Else
-        PressHold "W", 700
+        PressHold "W", 800
     End If
     Delay 300
     Press "D", 1, 200
 
     If hasNotZj Then
-    	Press "K", 1, 500
+    	Press "K", 1, 300
     	Press "S", 1, 300
     	Press "K", 3, 300
     	Press "J", 3, 300
@@ -152,10 +155,44 @@ Function DoRepairArmor()
     // 对话加装甲
     Press "K", 1, 300
     Press "K", 2, 500
-    Press "J", 5, 500
+    Press "J", 4, 500
 
-    // 传送回行商刷怪点
-    ReturnToFarmSpot
+    // 重新进入一发屋地道
+    PressHold "S", 1060
+    Delay 934
+    PressHold "S", 582
+    PressHold "D", 382
+    PressHold "S", 616
+    PressHold "D", 1063
+    PressHold "W", 395
+    Delay 969
+    PressHold "W", 614
+    PressHold "A", 1060
+    Delay 115
+    PressHold "W", 118
+    PressHold "A", 500
+    Delay 1115
+    PressHold "D", 167
+    PressHold "W", 583
+    PressHold "D", 1060
+    PressHold "S", 150
+    PressHold "A", 297
+    Delay 982
+    PressHold "D", 168
+    PressHold "W", 274
+    PressHold "A", 1060
+    Delay 1250
+    PressHold "A", 366
+    PressHold "S", 568
+    PressHold "A", 265
+    PressHold "S", 400
+    PressHold "A", 500
+    PressHold "W", 600
+    PressHold "A", 450
+    PressHold "W", 600
+    PressHold "A", 546
+    PressHold "W", 300
+    PressHold "A", 600
 
     hasNotZj = False
 End Function
@@ -251,7 +288,7 @@ Function DoBait()
     Press "K", 2, 350
     Press "K", 1, 800
 
-    // 循环检测闪光10次（行商用10次，比河马的20次少）
+    // 循环检测闪光10次（一发屋用10次，比河马的20次少）
     Dim i
     For i = 1 To 10
         If DetectFlash() Then
@@ -356,7 +393,7 @@ Function HandleMenuScene()
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
 
     // 确定诱敌目标
-    // If FindAndPress("行商杀手.bmp", 220, 272, 430, 318, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("一发屋.bmp", 224, 368, 388, 415, 0.95, "K", DELAY_NORMAL) Then Exit Function
 
     // 方向键导航
     // If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
@@ -399,15 +436,49 @@ Function MainLoop()
     End Select
 End Function
 
-// 统一传送回行商刷怪点（补装甲和入口共用）
+// 统一传送回一发屋刷怪点（补装甲和入口共用）
 Function ReturnToFarmSpot()
-    // 传送回行商附近城镇
+    // 传送回一发屋附近城镇
     Press "R", 1, 300
-    Press "D", 1, 100
+    Press "D", 2, 100
     Press "K", 1, 1000
     WaitForTeleport
-    // 走到行商刷新点（根据实际位置调整）
-    // TODO: 根据实际行商位置调整移动路径
+    // 重新进入一发屋地道
+    PressHold "S", 1060
+    Delay 934
+    PressHold "S", 582
+    PressHold "D", 382
+    PressHold "S", 616
+    PressHold "D", 1063
+    PressHold "W", 395
+    Delay 969
+    PressHold "W", 614
+    PressHold "A", 1060
+    Delay 115
+    PressHold "W", 118
+    PressHold "A", 500
+    Delay 1115
+    PressHold "D", 167
+    PressHold "W", 583
+    PressHold "D", 1060
+    PressHold "S", 150
+    PressHold "A", 297
+    Delay 982
+    PressHold "D", 168
+    PressHold "W", 274
+    PressHold "A", 1060
+    Delay 1250
+    PressHold "A", 366
+    PressHold "S", 568
+    PressHold "A", 265
+    PressHold "S", 400
+    PressHold "A", 500
+    PressHold "W", 600
+    PressHold "A", 450
+    PressHold "W", 600
+    PressHold "A", 546
+    PressHold "W", 300
+    PressHold "A", 600
 End Function
 
 // ==================== 入口 ====================
