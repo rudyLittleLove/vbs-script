@@ -13,7 +13,7 @@ hasFlashDetected = False
 Dim hasNotZj
 hasNotZj = False
 
-// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话
+// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话, 4=战斗结算
 Dim currentScene
 currentScene = 1
 
@@ -230,11 +230,17 @@ End Function
 
 // ==================== 场景检测与分发 ====================
 
-// 检测当前场景，返回：1=大地图, 2=战斗中, 3=菜单/对话/掉落等
+// 检测当前场景，返回：1=大地图, 2=战斗中, 3=菜单/对话, 4=战斗结算
 Function DetectScene()
     // 战斗中（最高优先级）
     If FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then
         DetectScene = 2
+        Exit Function
+    End If
+
+    // 战斗结算：有菜单钉（战斗结束后的结算界面，比大地图优先）
+    If FindImage("菜单钉.bmp", 256, 506, 275, 524, 1) Then
+        DetectScene = 4
         Exit Function
     End If
 
@@ -244,7 +250,7 @@ Function DetectScene()
         Exit Function
     End If
 
-    // 其他情况：菜单打开、对话中、掉落处理、传送加载中等
+    // 其他情况：菜单打开、对话中、传送加载中等
     DetectScene = 3
 End Function
 
@@ -261,6 +267,7 @@ Function DoBait()
     Press "K", 1, 800
 
     // 循环检测闪光10次（一发屋用10次，比河马的20次少）
+    // 检测到闪光 = 稀有敌人，直接进入战斗（不逃跑）
     Dim i
     For i = 1 To 10
         If DetectFlash() Then
@@ -270,8 +277,8 @@ Function DoBait()
         Delay 15
     Next
 
-    // 闪光检测完后按J跳过菜单，回到攻击界面等待武器切换
-    Press "J", 1, 100
+    // 无论是否检测到闪光，都按K确认进入战斗
+    Press "K", 1, 100
 End Function
 
 // 处理战斗场景
@@ -372,6 +379,19 @@ Function HandleMenuScene()
 
 End Function
 
+// 处理战斗结算场景（战斗结束后的掉落/经验结算界面）
+Function HandleBattleSettlement()
+    // 结算界面通用确认/取消处理
+    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬2.bmp", 760, 357, 916, 392, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+End Function
+
 // ==================== 主逻辑 ====================
 
 // 主循环逻辑：每5ms执行一次，先检测场景，再分发到对应处理函数
@@ -388,6 +408,8 @@ Function MainLoop()
             HandleBattleScene
         Case 3
             HandleMenuScene
+        Case 4
+            HandleBattleSettlement
     End Select
 End Function
 

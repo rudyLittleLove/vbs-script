@@ -286,7 +286,10 @@ Function MainLoop()
 
     If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
 
-    // 取消
+    // 战斗结束掉落物处理（优先于菜单钉，避免结算界面被菜单钉取消打断）
+    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
+
+    // 取消类
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("选猎鹿犬.bmp", 760, 350, 960, 470, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("45mm列鹿.bmp", 763, 356, 915, 395, 0.95, "J", DELAY_NORMAL) Then Exit Function
@@ -294,10 +297,6 @@ Function MainLoop()
     If FindAndPress("放入.bmp", 321, 593, 385, 628, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("菜单钉.bmp", 256, 506, 275, 524, 1, "J", DELAY_NORMAL) Then Exit Function
-    
-    // 战斗结束掉落物处理
-    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
     
     // 2. 大地图中打开菜单
     If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then

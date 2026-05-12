@@ -17,7 +17,7 @@ hasWeaponSwitched = False
 Dim hasNotZj
 hasNotZj = False
 
-// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话
+// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话, 4=战斗结算
 Dim currentScene
 currentScene = 1
 
@@ -222,11 +222,17 @@ End Function
 
 // ==================== 场景检测与分发 ====================
 
-// 检测当前场景，返回：1=大地图, 2=战斗中, 3=菜单/对话/掉落等
+// 检测当前场景，返回：1=大地图, 2=战斗中, 3=菜单/对话, 4=战斗结算
 Function DetectScene()
     // 战斗中（最高优先级）
     If FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then
         DetectScene = 2
+        Exit Function
+    End If
+
+    // 战斗结算：有菜单钉（战斗结束后的结算界面，比大地图优先）
+    If FindImage("菜单钉.bmp", 256, 506, 275, 524, 1) Then
+        DetectScene = 4
         Exit Function
     End If
 
@@ -236,7 +242,7 @@ Function DetectScene()
         Exit Function
     End If
 
-    // 其他情况：菜单打开、对话中、掉落处理、传送加载中等
+    // 其他情况：菜单打开、对话中、传送加载中等
     DetectScene = 3
 End Function
 
@@ -345,18 +351,9 @@ Function HandleMenuScene()
         Exit Function
     End If
 
-    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
 
-    // 取消类
-    If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选猎鹿犬2.bmp", 760, 357, 916, 392, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
-
-    // 战斗结束掉落物处理
-    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
 
     // 确定诱敌目标
     // If FindAndPress("行商杀手.bmp", 220, 272, 430, 318, 0.95, "K", DELAY_NORMAL) Then Exit Function
@@ -366,6 +363,18 @@ Function HandleMenuScene()
     // If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
     // If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
 
+End Function
+
+// 处理战斗结算场景（战斗结束后的掉落/经验结算界面）
+Function HandleBattleSettlement()
+    // 结算界面通用确认/取消处理
+    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选猎鹿犬2.bmp", 760, 357, 916, 392, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
 End Function
 
 // ==================== 主逻辑 ====================
@@ -384,6 +393,8 @@ Function MainLoop()
             HandleBattleScene
         Case 3
             HandleMenuScene
+        Case 4
+            HandleBattleSettlement
     End Select
 End Function
 

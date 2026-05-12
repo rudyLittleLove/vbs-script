@@ -1,0 +1,185 @@
+--- "\350\207\252\345\212\250-\350\241\214\345\225\206-\351\227\252\345\205\211\346\210\230\346\226\227.Q"	2026-05-12 17:26:19.964042900 +0800
++++ "\350\207\252\345\212\250-\344\270\200\345\217\221\345\261\213-\351\227\252\345\205\211\346\210\230\346\226\227.Q"	2026-05-12 17:21:18.600121900 +0800
+@@ -109,6 +109,10 @@
+     KeyPress "J", 3
+     Delay 300
+ 
++    Press "R", 1, 300
++    Press "D", 2, 100
++    Press "K", 1, 8000
++
+     If hasNotZj Then
+     	Press "E", 1, 100
+     	Press "K", 1, 200
+@@ -122,19 +126,18 @@
+     PressHold "D", 800
+     PressHold "W", 600
+     Delay 800
+-    Press "K", 1, 100
+-    Press "J", 4, 300
++    Press "K", 2, 500
+ 
+     If hasNotZj Then
+-        PressHold "W", 1300
++        PressHold "W", 1400
+     Else
+-        PressHold "W", 700
++        PressHold "W", 800
+     End If
+     Delay 300
+     Press "D", 1, 200
+ 
+     If hasNotZj Then
+-    	Press "K", 1, 500
++    	Press "K", 1, 300
+     	Press "S", 1, 300
+     	Press "K", 3, 300
+     	Press "J", 3, 300
+@@ -148,10 +151,44 @@
+     // 对话加装甲
+     Press "K", 1, 300
+     Press "K", 2, 500
+-    Press "J", 5, 500
++    Press "J", 4, 500
+ 
+-    // 传送回行商刷怪点
+-    ReturnToFarmSpot
++    // 重新进入一发屋地道
++    PressHold "S", 1060
++    Delay 934
++    PressHold "S", 582
++    PressHold "D", 382
++    PressHold "S", 616
++    PressHold "D", 1063
++    PressHold "W", 395
++    Delay 969
++    PressHold "W", 614
++    PressHold "A", 1060
++    Delay 115
++    PressHold "W", 118
++    PressHold "A", 500
++    Delay 1115
++    PressHold "D", 167
++    PressHold "W", 583
++    PressHold "D", 1060
++    PressHold "S", 150
++    PressHold "A", 297
++    Delay 982
++    PressHold "D", 168
++    PressHold "W", 274
++    PressHold "A", 1060
++    Delay 1250
++    PressHold "A", 366
++    PressHold "S", 568
++    PressHold "A", 265
++    PressHold "S", 400
++    PressHold "A", 500
++    PressHold "W", 600
++    PressHold "A", 450
++    PressHold "W", 600
++    PressHold "A", 546
++    PressHold "W", 300
++    PressHold "A", 600
+ 
+     hasNotZj = False
+ End Function
+@@ -229,7 +266,7 @@
+     Press "K", 2, 350
+     Press "K", 1, 800
+ 
+-    // 循环检测闪光10次（行商用10次，比河马的20次少）
++    // 循环检测闪光10次（一发屋用10次，比河马的20次少）
+     // 检测到闪光 = 稀有敌人，直接进入战斗（不逃跑）
+     Dim i
+     For i = 1 To 10
+@@ -319,13 +356,21 @@
+         Exit Function
+     End If
+ 
++    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+ 
+     // 取消类
++    If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
++    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
++    If FindAndPress("选猎鹿犬2.bmp", 760, 357, 916, 392, 0.95, "J", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
+ 
++    // 战斗结束掉落物处理
++    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
++    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
++
+     // 确定诱敌目标
+-    // If FindAndPress("行商杀手.bmp", 220, 272, 430, 318, 0.95, "K", DELAY_NORMAL) Then Exit Function
++    If FindAndPress("一发屋.bmp", 224, 368, 388, 415, 0.95, "K", DELAY_NORMAL) Then Exit Function
+ 
+     // 方向键导航
+     // If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
+@@ -338,10 +383,12 @@
+ Function HandleBattleSettlement()
+     // 结算界面通用确认/取消处理
+     If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
++    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("选猎鹿犬2.bmp", 760, 357, 916, 392, 0.95, "J", DELAY_NORMAL) Then Exit Function
++    If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
+     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+ End Function
+ 
+@@ -366,15 +413,49 @@
+     End Select
+ End Function
+ 
+-// 统一传送回行商刷怪点（补装甲和入口共用）
++// 统一传送回一发屋刷怪点（补装甲和入口共用）
+ Function ReturnToFarmSpot()
+-    // 传送回行商附近城镇
++    // 传送回一发屋附近城镇
+     Press "R", 1, 300
+-    Press "D", 1, 100
++    Press "D", 2, 100
+     Press "K", 1, 1000
+     WaitForTeleport
+-    // 走到行商刷新点（根据实际位置调整）
+-    // TODO: 根据实际行商位置调整移动路径
++    // 重新进入一发屋地道
++    PressHold "S", 1060
++    Delay 934
++    PressHold "S", 582
++    PressHold "D", 382
++    PressHold "S", 616
++    PressHold "D", 1063
++    PressHold "W", 395
++    Delay 969
++    PressHold "W", 614
++    PressHold "A", 1060
++    Delay 115
++    PressHold "W", 118
++    PressHold "A", 500
++    Delay 1115
++    PressHold "D", 167
++    PressHold "W", 583
++    PressHold "D", 1060
++    PressHold "S", 150
++    PressHold "A", 297
++    Delay 982
++    PressHold "D", 168
++    PressHold "W", 274
++    PressHold "A", 1060
++    Delay 1250
++    PressHold "A", 366
++    PressHold "S", 568
++    PressHold "A", 265
++    PressHold "S", 400
++    PressHold "A", 500
++    PressHold "W", 600
++    PressHold "A", 450
++    PressHold "W", 600
++    PressHold "A", 546
++    PressHold "W", 300
++    PressHold "A", 600
+ End Function
+ 
+ // ==================== 入口 ====================
