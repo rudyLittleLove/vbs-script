@@ -17,9 +17,9 @@ hasWeaponSwitched = False
 Dim hasNotZj
 hasNotZj = False
 
-// 当前场景状态：0=未知, 1=大地图, 2=战斗中, 3=菜单/对话
+// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话
 Dim currentScene
-currentScene = 0
+currentScene = 1
 
 
 // ==================== 辅助函数 ====================
@@ -165,7 +165,8 @@ End Function
 // 战斗中逃跑并等待回到大地图
 Function EscapeBattle()
     Do
-        If IsWorldMap() Then
+        // 逃跑成功：检测到大地图标志即可（不需要检查菜单钉，逃跑后菜单通常是关闭的）
+        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
             Exit Do
         End If
 
@@ -221,7 +222,7 @@ End Function
 
 // ==================== 场景检测与分发 ====================
 
-// 检测当前场景，返回：1=大地图, 2=战斗中, 3=菜单/对话/掉落等, 0=未知
+// 检测当前场景，返回：1=大地图, 2=战斗中, 3=菜单/对话/掉落等
 Function DetectScene()
     // 战斗中（最高优先级）
     If FindImage("战斗中人物.bmp", 197, 609, 221, 626, 0.95) Then
@@ -261,7 +262,7 @@ Function DoBait()
         Delay 15
     Next
 
-    // 闪光检测完后按J跳过菜单，回到战斗界面让武器切换逻辑处理
+    // 闪光检测完后按J跳过菜单，回到攻击界面等待武器切换
     Press "J", 1, 100
 End Function
 
@@ -344,6 +345,9 @@ Function HandleMenuScene()
         Exit Function
     End If
 
+    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+
     // 取消类
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
@@ -352,7 +356,6 @@ Function HandleMenuScene()
 
     // 战斗结束掉落物处理
     If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
 
     // 确定诱敌目标
@@ -363,10 +366,6 @@ Function HandleMenuScene()
     // If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
     // If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
 
-    // 如果回到了大地图，更新场景状态
-    If IsWorldMap() Then
-        currentScene = 1
-    End If
 End Function
 
 // ==================== 主逻辑 ====================
@@ -376,10 +375,7 @@ Function MainLoop()
     Dim scene
     scene = DetectScene()
 
-    // 场景状态切换时更新 currentScene
-    If scene > 0 Then
-        currentScene = scene
-    End If
+    currentScene = scene
 
     Select Case currentScene
         Case 1
@@ -388,14 +384,6 @@ Function MainLoop()
             HandleBattleScene
         Case 3
             HandleMenuScene
-        Case Else
-            // 未知场景，尝试通用检测
-            If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
-            If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
-            // 如果回到了大地图，更新场景状态
-            If IsWorldMap() Then
-                currentScene = 1
-            End If
     End Select
 End Function
 
