@@ -86,14 +86,16 @@ End Function
 // ==================== 补血 ====================
 
 Function DoHeal()
-    KeyPress "A", 1
-    KeyPress "W", 1
+	If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
+    	Press "A", 1, 50
+    	Press "W", 1, 50
+    End If
     Press "K", 1, 100
     Press "S", 1, 100
     Press "K", 1, 100
     Press "S", 1, 100
     Press "K", 4, 100
-    Press "K", 3, 300
+    Press "K", 2, 300
     Press "J", 4, 50
 End Function
 
@@ -160,7 +162,7 @@ Function EscapeBattle()
             Exit Do
         End If
 
-        // 战斗中遇到对话框，按J取消后继续循环等待回到大地图
+		// 战斗中遇到对话框，按J取消后继续循环等待回到大地图
         If FindImage("对话框.bmp", 1060, 717, 1087, 736, 0.98) Then
             KeyPress "J", 1
             Delay DELAY_NORMAL
@@ -310,7 +312,7 @@ Function HandleMenuScene()
         End If
 
         // 检测血量少
-        If FindImage("血量少.bmp", 495, 700, 600, 750, 0.95) Then
+        If FindImage("血条少一点.bmp", 614, 737, 632, 745, 0.98) Then
             DoHeal
             Exit Function
         End If
@@ -324,8 +326,8 @@ Function HandleMenuScene()
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
 
     // 方向键导航
-    If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
-    If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
+     If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
+     If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
 
 End Function
 
