@@ -192,10 +192,6 @@ End Function
 // 战斗中逃跑并等待回到大地图
 Function EscapeBattle()
     Press "J", 1, 100
-    // 检测主炮弹药为0 → 逃跑回城补充
-    If FindImage("炮弹0.bmp", 695, 430, 763, 480, 1) Or FindImage("弹药0.bmp", 213, 585, 355, 626, 0.95) Then
-        hasNotZj = True
-    End If
     Do
         // 逃跑成功：检测到大地图标志即可（不需要检查菜单钉，逃跑后菜单通常是关闭的）
         If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
