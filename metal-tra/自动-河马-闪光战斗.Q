@@ -17,6 +17,10 @@ has45 = False
 Dim saveNum
 saveNum = 0
 
+// 是否已执行首回合防御（巡逻蜂出现后防御一次，第二回合开始识别闪光）
+Dim hasDefended
+hasDefended = False
+
 
 // ==================== 辅助函数 ====================
 
@@ -41,7 +45,6 @@ Function FindImage(imgName, x1, y1, x2, y2, similarity)
 End Function
 
 // 点击按键count次，每次延迟delayMs
-// 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
 Function Press(key, count, delayMs)
     Dim i
     If count < 1 Then count = 1
@@ -53,7 +56,6 @@ Function Press(key, count, delayMs)
 End Function
 
 // 长按指定按键，按住指定毫秒后松开
-// 用法: PressHold "D", 800  -> 按住D 800ms
 Function PressHold(key, holdMs)
     If holdMs < 0 Then holdMs = 0
     KeyDown key, 1
@@ -62,7 +64,6 @@ Function PressHold(key, holdMs)
 End Function
 
 // 检测是否在大地图（有大地图标志且没有菜单钉）
-// 返回 True=是大地图, False=不是
 Function IsWorldMap()
     If Not FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
         IsWorldMap = False
@@ -83,7 +84,7 @@ End Function
 Function WaitForTeleport()
     Dim i
     For i = 1 To 30
-        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
+        If IsWorldMap() Then
             Exit Function
         End If
         Delay 1000
@@ -168,7 +169,6 @@ Function DoRepairArmor()
 End Function
 
 // 存物流程：回城 -> 拆卸装甲片 -> 存45mm炮 -> 补装甲
-// 触发条件：掉落45mm炮后大地图执行
 Function DoStoreItems()
     // 1. 取消
     KeyPress "J", 3
@@ -255,6 +255,18 @@ Function DoBait()
     Press "K", 1, 800
 End Function
 
+// 检测闪光（进入战斗时的闪光特效）
+Function DetectFlash()
+    Dim flashImg
+    For Each flashImg In Array("闪光1.bmp", "闪光2.bmp", "闪光3.bmp", "闪光4.bmp", "闪光5.bmp", "闪光6.bmp", "闪光7.bmp", "闪光8.bmp", "闪光9.bmp", "闪光10.bmp")
+        If FindImage(flashImg, 148, 131, 616, 425, 0.9) Then
+            DetectFlash = True
+            Exit Function
+        End If
+    Next
+    DetectFlash = False
+End Function
+
 // 处理战斗场景
 Function HandleBattleScene()
     // 此处无怪
@@ -264,13 +276,14 @@ Function HandleBattleScene()
         Exit Function
     End If
 
-    // 怪物出现了
+    // 首回合：巡逻蜂出现 → 防御，等待召唤河马
     If FindImage("巡逻蜂出现.bmp", 217, 586, 455, 597, 0.98) Then
         Press "J", 2, 100
         Press "A", 2, 100
         Press "K", 2, 100
         Press "A", 2, 100
         Press "K", 2, 100
+        hasDefended = True
         Exit Function
     End If
 
@@ -290,6 +303,30 @@ Function HandleBattleScene()
         End If
     End If
 
+    // 第二回合起：已防御过，开始识别闪光
+    If hasDefended Then
+        // 循环检测闪光4次
+        Dim hasFlash
+        hasFlash = False
+        Dim i
+        For i = 1 To 4
+            If DetectFlash() Then
+                hasFlash = True
+                Exit For
+            End If
+            Delay 50
+        Next
+
+        // 无闪光 → 逃跑（只打闪光河马）
+        If Not hasFlash Then
+            EscapeBattle
+            Exit Function
+        End If
+
+        // 有闪光 → 继续战斗，重置防御标志（下次战斗重新防御）
+        hasDefended = False
+    End If
+
     // 主炮/副炮选择敌人
     If FindImage("主炮选敌人.bmp", 373, 518, 420, 541, 0.95) Then 
         Press "S", 2, 100
@@ -304,6 +341,9 @@ End Function
 
 // 处理大地图场景
 Function HandleWorldScene()
+    // 重置战斗状态
+    hasDefended = False
+
     // 需要回城补充（炮弹0或SP_LOW逃跑后）
     If needRepair Then
         needRepair = False

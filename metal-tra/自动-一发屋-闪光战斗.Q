@@ -5,17 +5,11 @@ Const DELAY_SHORT = 10
 Const DELAY_NORMAL = 20
 
 // ==================== 全局状态变量 ====================
-// 是否识别到闪光怪（战斗中有效，退出战斗后重置）
-Dim hasFlashDetected
-hasFlashDetected = False
-
 // 是否无装甲/需要回城补充
-Dim hasNotZj
-hasNotZj = False
+Dim needRepair
+needRepair = False
 
-// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话, 4=战斗结算
-Dim currentScene
-currentScene = 1
+
 
 
 // ==================== 辅助函数 ====================
@@ -113,7 +107,7 @@ Function DoRepairArmor()
     Press "D", 2, 100
     Press "K", 1, 8000
 
-    If hasNotZj Then
+    If needRepair Then
     	Press "E", 1, 100
     	Press "K", 1, 200
     End If
@@ -128,7 +122,7 @@ Function DoRepairArmor()
     Delay 800
     Press "K", 2, 500
 
-    If hasNotZj Then
+    If needRepair Then
         PressHold "W", 1400
     Else
         PressHold "W", 800
@@ -136,7 +130,7 @@ Function DoRepairArmor()
     Delay 300
     Press "D", 1, 200
 
-    If hasNotZj Then
+    If needRepair Then
     	Press "K", 1, 300
     	Press "S", 1, 300
     	Press "K", 3, 300
@@ -189,25 +183,30 @@ Function DoRepairArmor()
     PressHold "A", 546
     PressHold "W", 300
     PressHold "A", 600
-
-    hasNotZj = False
 End Function
 
 // ==================== 逃跑流程 ====================
 
 // 战斗中逃跑并等待回到大地图
 Function EscapeBattle()
+    Press "J", 1, 100
     Do
         // 逃跑成功：检测到大地图标志即可（不需要检查菜单钉，逃跑后菜单通常是关闭的）
         If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
             Exit Do
         End If
 
-        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then
+        // 战斗中遇到对话框，按J取消后继续循环等待回到大地图
+        If FindImage("对话框.bmp", 1060, 717, 1087, 736, 0.98) Then
+            KeyPress "J", 1
+            Delay DELAY_NORMAL
+        End If
+
+        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
             Press "A", 1, 100
             Press "K", 1, 200
             Press "A", 1, 100
-            Press "K", 1, 2000
+            Press "K", 1, 1500
         End If
         Delay 500
     Loop
@@ -256,46 +255,49 @@ End Function
 
 // ==================== 诱敌流程 ====================
 
-// 执行诱敌并检测闪光，有闪光切主炮，无闪光切副炮
+// 执行诱敌并检测闪光，有闪光则战斗，无闪光则逃跑
 Function DoBait()
     // 诱敌菜单导航（K→S→K→W→W→K→K）
-    Press "K", 2, 40
-    Press "S", 1, 40
-    Press "K", 1, 40
-    Press "W", 2, 40
-    Press "K", 2, 350
+    Press "K", 2, 100
+    Press "S", 1, 100
+    Press "K", 1, 100
+    Press "W", 2, 100
+    Press "K", 2, 100
+    Press "K", 1, 350
     Press "K", 1, 800
 
-    // 循环检测闪光10次（一发屋用10次，比河马的20次少）
+    // 循环检测闪光4次
     // 检测到闪光 = 稀有敌人，直接进入战斗（不逃跑）
     Dim i
-    For i = 1 To 10
-        If DetectFlash() Then
-            hasFlashDetected = True
-            Exit For
+    For i = 1 To 4
+        If DetectFlash() Then 
+            Exit Function
         End If
-        Delay 15
+        Delay 50
     Next
 
-    // 无论是否检测到闪光，都按K确认进入战斗
-    Press "K", 1, 100
+    // 没检测到，逃跑
+    EscapeBattle
 End Function
 
 // 处理战斗场景
 Function HandleBattleScene()
     // 本版本固定使用主炮，不切换武器
-
     // 检测主炮弹药为0 → 逃跑回城补充
     If FindImage("炮弹0.bmp", 695, 430, 763, 480, 1) Or FindImage("弹药0.bmp", 213, 585, 355, 626, 0.95) Then
-        hasNotZj = True
+        needRepair = True
         EscapeBattle
         Exit Function
+    End If
+    // 弹药剩余7发以下：本场继续攻击，战斗结束后回城补甲（避免下场战斗弹药不足）
+    If FindImage("弹药7.bmp", 702, 429, 743, 481, 1) Then
+        needRepair = True
     End If
 
     // 检测装甲低(SP_LOW) → 逃跑回城补充
     If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then
         If FindImage("SP_LOW_1.bmp", 342, 582, 435, 606, 0.98) Or FindImage("SP_LOW_2.bmp", 342, 676, 437, 700, 0.98) Then
-            hasNotZj = True
+            needRepair = True
             EscapeBattle
             Exit Function
         End If
@@ -307,32 +309,11 @@ End Function
 
 // 处理大地图场景
 Function HandleWorldScene()
-    // 重置战斗状态
-    hasFlashDetected = False
 
     // 需要回城补充（弹药0或SP_LOW逃跑后）
-    If hasNotZj Then
-        hasNotZj = False
+    If needRepair Then 
+    	needRepair = False
         DoRepairArmor
-        Exit Function
-    End If
-
-    // 检测无装甲
-    If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
-        hasNotZj = True
-        DoRepairArmor
-        Exit Function
-    End If
-
-    // 检测装甲少
-    If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Then
-        DoRepairArmor
-        Exit Function
-    End If
-
-    // 检测血量少
-    If FindImage("血量少.bmp", 495, 700, 600, 750, 0.95) Then
-        DoHeal
         Exit Function
     End If
 
@@ -350,32 +331,38 @@ Function HandleMenuScene()
     // If FindAndPress("诱敌.bmp", 227, 214, 451, 260, 0.95, "K", DELAY_NORMAL) Then Exit Function
     // If FindAndPress("去寻找怪.bmp", 400, 500, 760, 600, 0.95, "K", DELAY_NORMAL) Then Exit Function
 
-    // 检测到诱敌触发，执行带闪光检测的诱敌流程
-    If FindImage("手指_诱饵.bmp", 200, 200, 620, 430, 0.95) Or FindImage("诱饵.bmp", 207, 584, 483, 628, 1.0) Then
-        DoBait
+    // 检测到特技指向（此页面可同时查看装甲量和血量，故在此统一判断状态）
+    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
+        // 检测无装甲
+        If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
+            needRepair = True
+            DoRepairArmor
+            Exit Function
+        End If
+
+        // 检测装甲少
+        If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Then
+            DoRepairArmor
+            Exit Function
+        End If
+
+        // 检测血量少
+        If FindImage("血量少.bmp", 495, 700, 600, 750, 0.95) Then
+            DoHeal
+            Exit Function
+        End If
+        doBait
         Exit Function
     End If
 
-    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
 
     // 取消类
-    If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选猎鹿犬.bmp", 780, 400, 950, 450, 0.95, "J", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("选猎鹿犬2.bmp", 760, 357, 916, 392, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
 
-    // 战斗结束掉落物处理
-    If FindAndPress("不搭载.bmp", 780, 450, 950, 500, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
-
-    // 确定诱敌目标
-    If FindAndPress("一发屋.bmp", 224, 368, 388, 415, 0.95, "K", DELAY_NORMAL) Then Exit Function
-
     // 方向键导航
-    // If FindAndPress("手指_猎物气息.bmp", 200, 145, 620, 230, 0.95, "S", DELAY_SHORT) Then Exit Function
-    // If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
-    // If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
+    If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
+    If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
 
 End Function
 
@@ -399,9 +386,7 @@ Function MainLoop()
     Dim scene
     scene = DetectScene()
 
-    currentScene = scene
-
-    Select Case currentScene
+    Select Case scene
         Case 1
             HandleWorldScene
         Case 2

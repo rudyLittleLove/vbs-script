@@ -126,3 +126,10 @@ Press "K", 2, 200
 Press "J", 2, 200
 Press "J", 1, 600
 Press "J", 3, 200
+
+//———————————————— 四倍速 走格子耗时  —————————————————————————
+PressHold "S", 30  // 一格
+PressHold "S", 75  // 二格
+PressHold "S", 130  // 三格
+PressHold "S", 175  // 四格
+PressHold "S", 225  // 五格
