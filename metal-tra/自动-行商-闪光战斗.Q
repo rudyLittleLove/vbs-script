@@ -168,7 +168,11 @@ Function EscapeBattle()
             Exit Do
         End If
 
-		If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+        // 战斗中遇到对话框，按J取消后继续循环等待回到大地图
+        If FindImage("对话框.bmp", 1060, 717, 1087, 736, 0.98) Then
+            KeyPress "J", 1
+            Delay DELAY_NORMAL
+        End If
 
         If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
             Press "A", 1, 100
@@ -223,7 +227,7 @@ End Function
 
 // ==================== 诱敌流程 ====================
 
-// 执行诱敌并检测闪光，有闪光切主炮，无闪光切副炮
+// 执行诱敌并检测闪光，有闪光则战斗，无闪光则逃跑
 Function DoBait()
     // 诱敌菜单导航（K→S→K→W→W→K→K）
     Press "K", 2, 100
@@ -257,6 +261,7 @@ Function HandleBattleScene()
         EscapeBattle
         Exit Function
     End If
+    // 弹药剩余7发以下：本场继续攻击，战斗结束后回城补甲（避免下场战斗弹药不足）
     If FindImage("弹药7.bmp", 702, 429, 743, 481, 1) Then
         hasNotZj = True
     End If
@@ -297,9 +302,9 @@ Function HandleMenuScene()
     // If FindAndPress("手指_诱敌.bmp", 200, 200, 620, 430, 0.95, "K", DELAY_NORMAL) Then Exit Function
     // If FindAndPress("诱敌.bmp", 227, 214, 451, 260, 0.95, "K", DELAY_NORMAL) Then Exit Function
     // If FindAndPress("去寻找怪.bmp", 400, 500, 760, 600, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    // 检测到诱敌触发，执行带闪光检测的诱敌流程
+    // 检测到特技指向（此页面可同时查看装甲量和血量，故在此统一判断状态）
     If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
-        	// 检测无装甲
+        // 检测无装甲
         If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
             hasNotZj = True
             DoRepairArmor
