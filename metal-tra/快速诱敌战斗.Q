@@ -35,6 +35,7 @@ Function run()
 	End If
     KeyPress "K", 1
     
+    // 无血，停止战斗
     If FindImage("血条0.bmp",342, 601, 471, 606, 1) Then 
 		KeyDown "Ctrl", 1
 		KeyDown "Alt", 1
@@ -43,9 +44,7 @@ Function run()
 		KeyUp "Ctrl", 1
 		KeyUp "Alt", 1
 		KeyUp "3", 1
-		KeyPress "F12", 1
-
-        TracePrint "检测到闪光怪，退出脚本！"    
+		KeyPress "F12", 1 
     End If
 End Function
 
