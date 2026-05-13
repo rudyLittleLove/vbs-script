@@ -17,9 +17,7 @@ hasWeaponSwitched = False
 Dim hasNotZj
 hasNotZj = False
 
-// 当前场景状态：1=大地图, 2=战斗中, 3=菜单/对话, 4=战斗结算
-Dim currentScene
-currentScene = 1
+
 
 
 // ==================== 辅助函数 ====================
@@ -417,9 +415,7 @@ Function MainLoop()
     Dim scene
     scene = DetectScene()
 
-    currentScene = scene
-
-    Select Case currentScene
+    Select Case scene
         Case 1
             HandleWorldScene
         Case 2
