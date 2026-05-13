@@ -6,8 +6,8 @@ Const DELAY_NORMAL = 20
 
 // ==================== 全局状态变量 ====================
 // 是否无装甲/需要回城补充
-Dim hasNotZj
-hasNotZj = False
+Dim needRepair
+needRepair = False
 
 // ==================== 辅助函数 ====================
 
@@ -104,7 +104,7 @@ Function DoRepairArmor()
     Press "D", 2, 100
     Press "K", 1, 8000
 
-    If hasNotZj Then
+    If needRepair Then
     	Press "E", 1, 100
     	Press "K", 1, 200
     End If
@@ -119,7 +119,7 @@ Function DoRepairArmor()
     Delay 800
     Press "K", 2, 500
 
-    If hasNotZj Then
+    If needRepair Then
         PressHold "W", 1400
     Else
         PressHold "W", 800
@@ -127,7 +127,7 @@ Function DoRepairArmor()
     Delay 300
     Press "D", 1, 200
 
-    If hasNotZj Then
+    If needRepair Then
     	Press "K", 1, 300
     	Press "S", 1, 300
     	Press "K", 3, 300
@@ -180,8 +180,6 @@ Function DoRepairArmor()
     PressHold "A", 546
     PressHold "W", 300
     PressHold "A", 600
-
-    hasNotZj = False
 End Function
 
 // ==================== 逃跑流程 ====================
@@ -304,19 +302,19 @@ End Function
 Function HandleBattleScene()
     // 检测主炮弹药为0 → 逃跑回城补充
     If FindImage("炮弹0.bmp", 695, 430, 763, 480, 1) Or FindImage("弹药0.bmp", 213, 585, 355, 626, 0.95) Then
-        hasNotZj = True
+        needRepair = True
         EscapeBattle
         Exit Function
     End If
     // 弹药剩余7发以下：本场继续攻击，战斗结束后回城补甲（避免下场战斗弹药不足）
     If FindImage("弹药7.bmp", 702, 429, 743, 481, 1) Then
-        hasNotZj = True
+        needRepair = True
     End If
 
     // 检测装甲低(SP_LOW) → 逃跑回城补充
     If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then
         If FindImage("SP_LOW_1.bmp", 342, 582, 435, 606, 0.98) Or FindImage("SP_LOW_2.bmp", 342, 676, 437, 700, 0.98) Then
-            hasNotZj = True
+            needRepair = True
             EscapeBattle
             Exit Function
         End If
@@ -329,8 +327,8 @@ End Function
 // 处理大地图场景
 Function HandleWorldScene()
     // 需要回城补充（弹药0、弹药7或SP_LOW战斗结束后）
-    If hasNotZj Then 
-    	hasNotZj = False
+    If needRepair Then 
+    	needRepair = False
         DoRepairArmor
         Exit Function
     End If
@@ -353,7 +351,7 @@ Function HandleMenuScene()
     If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
         // 检测无装甲
         If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
-            hasNotZj = True
+            needRepair = True
             DoRepairArmor
             Exit Function
         End If
