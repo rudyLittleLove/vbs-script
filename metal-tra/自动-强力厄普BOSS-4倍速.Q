@@ -3,6 +3,9 @@ Const IMAGE_PATH = "D:\workspace\vbs-script\images\"
 Const DELAY_SHORT = 10
 Const DELAY_NORMAL = 20
 
+// 寻路卡死检测阈值（约300ms未找到地标则重置）
+Const STUCK_THRESHOLD = 30
+
 // 是否无装甲
 Dim reload
 reload = 0
@@ -27,7 +30,7 @@ Function FindImage(imgName, x1, y1, x2, y2, similarity)
     FindImage = (intX > 0)
 End Function
 
-// 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
+// 用法: PressHold "K", 100  -> 按住K 100ms
 Function PressHold(key, holdMs)
     If holdMs < 0 Then holdMs = 0
     KeyDown key, 1
@@ -46,63 +49,64 @@ Function Press(key, count, delayMs)
     Next
 End Function
 
-Function calcDelay(num)
+Function GetMoveDelay(num)
 	If num > 4 Then 
-		calcDelay = 225
+		GetMoveDelay = 225
 		Exit Function
 	End If
 	If num > 3 Then 
-		calcDelay = 175
+		GetMoveDelay = 175
 		Exit Function
 	End If
 	If num > 2 Then 
-		calcDelay = 130
+		GetMoveDelay = 130
 		Exit Function
 	End If
 	If num > 1 Then 
-		calcDelay = 75
+		GetMoveDelay = 75
 		Exit Function
 	End If
 	If num > 0 Then 
-		calcDelay = 30
+		GetMoveDelay = 30
 		Exit Function
 	End If
 End Function
 
-Function preFindImg(imgName, x1, y1, x2, y2, similarity, dir)
-	Dim intX, intY, a, b, t, yanchi
-	yanchi = 0
-	a = Plugin.GetSysInfo.GetTime 
+Function ExecuteMoveStep(dir,num)
+	PressHold dir, GetMoveDelay(num)
+End Function
+
+Function FindImgWithDelay(imgName, x1, y1, x2, y2, similarity, dir)
+	Dim intX, intY, startTime, endTime, elapsedTime, delayTime
+	delayTime = 0
+	startTime = Plugin.GetSysInfo.GetTime 
     FindPic x1, y1, x2, y2, IMAGE_PATH & imgName, similarity, intX, intY
     
     If intX < 0 Then 
-    	preFindImg = False
+    	FindImgWithDelay = False
     	Exit Function
     End If
     
-    b = Plugin.GetSysInfo.GetTime
+	Select Case dir
+        Case "D"
+            delayTime = GetMoveDelay((intX - x1) / 49)
+        Case "A"
+            delayTime = GetMoveDelay((x1 - intX) / 49)
+        Case "W"
+            delayTime = GetMoveDelay((y1 - intY) / 49)
+        Case "S"
+            delayTime = GetMoveDelay((intY - y1) / 49)
+    End Select
     
-    t=b-a
+	endTime = Plugin.GetSysInfo.GetTime
     
-    If dir = "D" Then 
-    	yanchi = calcDelay((intX - x1) / 49)
-    End If
-    If dir = "A" Then 
-    	yanchi = calcDelay((x1 - intX) / 49)
-    End If
-    If dir = "W" Then 
-    	yanchi = calcDelay((y1 - intY) / 49)
-    End If
-    If dir = "S" Then 
-    	yanchi = calcDelay((intY - y1) / 49)
-    End If
-    
-    Delay yanchi - t
-    preFindImg = True
+    elapsedTime = endTime - startTime
+    If delayTime > elapsedTime Then Delay delayTime - elapsedTime
+    FindImgWithDelay = True
 End Function
 
 
-Function AllUp()
+Function ReleaseAllKeys()
 	reload = 0
 	KeyUp "A", 1
 	KeyUp "S", 1
@@ -110,60 +114,118 @@ Function AllUp()
 	KeyUp "W", 1
 End Function
 
-Function battle()
-    Press "J", 1, 0
-    reload = reload + 1
-    If reload > 30 Then 
-    	reload = 0
-    	run
-    End If
-	If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
-		reload = 0
-		If FindImage("蝎子.bmp", 178, 114, 788, 531, 1) Then 
-			Press "J", 1, 100
-			Press "D", 3, 100
-			Press "K", 3, 100
-		Else		
-			Press "J", 1, 100
-			Press "A", 1, 100
-			Press "K", 1, 100
-			Press "A", 1, 100
-			Press "K", 1, 100
-		End If
-	End If
+// 检测是否处于战斗中（通过"攻击"按钮判断）
+Function IsInBattle()
+	IsInBattle = FindImage("攻击.bmp", 212, 508, 327, 552, 1)
 End Function
 
+// 战斗中逃跑
+Function EscapeBattle()
+	Press "J", 1, 100
+	Press "A", 1, 100
+	Press "K", 1, 100
+	Press "A", 1, 100
+	Press "K", 1, 100
+End Function
 
-//进蝎子洞j
-Function move()
+// 蝎子BOSS战斗流程
+Function FightBoss()
+	Press "J", 1, 100
+	// 一号攻击
+	Press "D", 2, 100
+	Press "K", 1, 100
+	Press "S", 1, 100
+	Press "K", 1, 100
+	Press "D", 1, 100
+	Press "K", 2, 100
+	// 二号攻击
+	Press "K", 2, 100
+End Function
+
+Function HandleBattle()
+    Press "J", 1, 0
+    
+    // 判断是否进入战斗
+    If Not IsInBattle() Then
+        // 未战斗，累加卡死计数器
+        reload = reload + 1
+        If reload > STUCK_THRESHOLD Then 
+            reload = 0
+            // 寻路卡死，重置流程
+            StartNewRun
+        End If
+        Exit Function
+    End If
+    
+    // 进入战斗，重置卡死计数器
+    reload = 0
+    
+    // 判断是否是蝎子BOSS
+    If FindImage("蝎子.bmp", 178, 114, 788, 531, 1) Then 
+        FightBoss
+    Else		
+        EscapeBattle
+    End If
+End Function
+
+// 地图导航配置：地标图 -> 检测区域 -> 到达后执行的动作
+// 使用数组风格，但Q语言不支持数组，直接用顺序判断
+Function NavigateToBoss()
+	// 当前循环内地标命中标记（通用方向不需要标记）
+	Dim hitBossDl, hitBossUl, hitBossF1Cn, hitBossF1Sym, hitBossF3
+	hitBossDl = False
+	hitBossUl = False
+	hitBossF1Cn = False
+	hitBossF1Sym = False
+	hitBossF3 = False
+	
 	Do
-		If FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then 
-			AllUp
+        Dim foundLandmark
+        foundLandmark = False
+        
+        // 存档位开始（下+左）
+		If Not hitBossDl And FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then 
+			ReleaseAllKeys
 			PressHold "S", 30
 			KeyDown "A", 1
+			hitBossDl = True
+            foundLandmark = True
     	End If
     	
-    	If FindImage("3_boss_u_l.bmp", 607, 359, 631, 415, 1) Then 
-			AllUp
+        // 上左拐角（上+左）
+    	If Not foundLandmark And Not hitBossUl And FindImage("3_boss_u_l.bmp", 607, 359, 631, 415, 1) Then 
+			ReleaseAllKeys
 			PressHold "W", 30
 			PressHold "A", 30
+			hitBossUl = True
+            foundLandmark = True
     	End If
-    	If FindImage("3_boss_负1楼.bmp", 1012, 334, 1049, 354, 1) Then 
-			AllUp
-			PressHold "D", 30
+        
+        // 负1楼（中文）
+    	If Not foundLandmark And Not hitBossF1Cn And FindImage("3_boss_负1楼.bmp", 1012, 334, 1049, 354, 1) Then 
+			ReleaseAllKeys
+			ExecuteMoveStep("D", 1)
 			PressHold "W", 130
 			PressHold "D", 250
-			PressHold "S", 30
-			PressHold "A", 30
+			ExecuteMoveStep("S", 1)
+			ExecuteMoveStep("A", 1)
+			hitBossF1Cn = True
+            foundLandmark = True
     	End If
-    	If FindImage("3_boss_-1楼.bmp", 645, 360, 669, 424, 1) Then 
-			AllUp
+        
+        // -1楼（符号）
+    	If Not foundLandmark And Not hitBossF1Sym And FindImage("3_boss_-1楼.bmp", 645, 360, 669, 424, 1) Then 
+			ReleaseAllKeys
 			PressHold "D", 30
 			PressHold "W", 75
 			PressHold "A", 180
+			hitBossF1Sym = True
+            foundLandmark = True
     	End If
-    	If FindImage("3_boss_负3楼.bmp", 608, 367, 630, 420, 1) Then 
-			AllUp
+        
+        // 负3楼
+    	If Not foundLandmark And Not hitBossF3 And FindImage("3_boss_负3楼.bmp", 608, 367, 630, 420, 1) Then 
+			ReleaseAllKeys
 			PressHold "S", 140
 			PressHold "A", 140
 			PressHold "S", 140
@@ -175,41 +237,41 @@ Function move()
 			PressHold "W", 50
 			PressHold "A", 75
 			KeyDown "S", 1
+			hitBossF3 = True
+            foundLandmark = True
     	End If
-    	
-    	If FindImage("3_boss_l1.bmp", 617, 407, 664, 431, 1) Then 
-			AllUp
+        
+        // 往左（通用方向，不标记）
+    	If Not foundLandmark And FindImage("3_boss_l1.bmp", 617, 407, 664, 431, 1) Then 
+			ReleaseAllKeys
 			KeyDown "A", 1
+            foundLandmark = True
     	End If
-    	
-    	If FindImage("3_boss_d1.bmp", 602, 379, 629, 422, 1) Then 
-			AllUp
+        
+        // 往下（通用方向，不标记）
+    	If Not foundLandmark And FindImage("3_boss_d1.bmp", 602, 379, 629, 422, 1) Then 
+			ReleaseAllKeys
 			KeyDown "S", 1
+            foundLandmark = True
     	End If
-    	
-    	If preFindImg("3_boss_r1.bmp", 803, 223, 866, 341, 1, "S") Then 
-			AllUp
-			KeyDown "R", 1
-    	End If
-    	
-    	
-    	If FindImage("第一镇2.bmp", 586, 258, 634, 264, 1) Then 
-			AllUp
+        
+        // 往右（带预找图补偿，通用方向，不标记）
+    	If Not foundLandmark And FindImgWithDelay("3_boss_r1.bmp", 803, 223, 866, 341, 1, "S") Then 
+			ReleaseAllKeys
 			KeyDown "D", 1
+            foundLandmark = True
     	End If
-		//	往下移动
-		If FindImage("第一镇.bmp", 595, 356, 626, 366, 1) Or FindImage("进蝎洞1.bmp", 727, 554, 748, 563, 1) Or FindImage("第一镇3.bmp", 483, 253, 506, 265, 1) Then 
-			AllUp
-			KeyDown "S", 1
+
+		// 往上（通用方向，不标记）
+		If Not foundLandmark And FindImage("3_boss_u1.bmp", 602, 379, 629, 422, 1) Then 
+			ReleaseAllKeys
+			KeyDown "W", 1
+            foundLandmark = True
     	End If
-		If FindImage("战车达boss.bmp", 639, 382, 646, 448, 1) Then 
-			AllUp 
-			Press "E", 1, 100
-			Press "K", 1, 100
-			KeyDown "D", 1
-    	End If
-		If FindImage("诱蝎位.bmp", 634, 384, 724, 391, 1) Then 
-			AllUp 
+    	
+    	// 到达诱敌位置
+		If Not foundLandmark And FindImage("诱蝎位.bmp", 634, 384, 724, 391, 1) Then 
+			ReleaseAllKeys 
 			Press "h", 1, 100
     		Press "K", 2, 100
         	Press "S", 1, 100
@@ -217,31 +279,37 @@ Function move()
         	Press "W", 1, 100
         	Press "K", 3, 100
         	Press "J", 5, 100
+            foundLandmark = True
     	End If
     	
-    	If FindImage("5星.bmp", 520, 630, 641, 660, 0.96) Then 
-    		KeyPress 175, 20
-			KeyDown "Ctrl", 1
-			KeyDown "Alt", 1
-			KeyDown "3", 1
-			Delay 300
-			KeyUp "Ctrl", 1
-			KeyUp "Alt", 1
-			KeyUp "3", 1
-			KeyPress "F12", 1
-    	End If
-    	
+    	// 检测到黑桃铲（战斗结束有掉落），跳出寻路循环进入5星判断
     	If FindImage("黑桃铲.bmp", 347, 588, 461, 622, 1) Then 
     		reload = 0
-    		run
 			Exit Do
     	End If
     	
-    	battle 
+    	HandleBattle 
 	Loop
+	
+	// 战斗结束有掉落，单次判断5星
+	// 检测到5星掉落，停止脚本
+	If FindImage("5星.bmp", 520, 630, 641, 660, 0.96) Then 
+		KeyPress 175, 20
+		KeyDown "Ctrl", 1
+		KeyDown "Alt", 1
+		KeyDown "3", 1
+		Delay 300
+		KeyUp "Ctrl", 1
+		KeyUp "Alt", 1
+		KeyUp "3", 1
+		KeyPress "F12", 1 // 退出脚本快捷键
+		
+	End If
+	// 非5星，直接返回，外层循环会调用StartNewRun重置流程
 End Function
 
-Function run()
+// 刷新游戏并导航到目标位置
+Function StartNewRun()
 	Press "J", 3, 200
 	//		刷新
 	Press "F5", 1, 10
@@ -261,12 +329,12 @@ Function run()
 	Delay 300
 	
 	//    移动
-    move	
+    NavigateToBoss	
 End Function
 
 // ==================== 入口 ====================
 Do
-    run
+    StartNewRun
     Delay 10
 Loop
 
