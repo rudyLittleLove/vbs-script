@@ -17,11 +17,14 @@ has45 = False
 Dim saveNum
 saveNum = 0
 
+Dim longStop
+longStop = 0
 
 // ==================== 辅助函数 ====================
 
 // 在指定区域找图，找到则按键并返回 true
 Function FindAndPress(imgName, x1, y1, x2, y2, similarity, key, delayMs)
+	longStop = 0
     Dim intX, intY
     FindPic x1, y1, x2, y2, IMAGE_PATH & imgName, similarity, intX, intY
     If intX > 0 Then
@@ -43,6 +46,7 @@ End Function
 // 点击按键count次，每次延迟delayMs
 // 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
 Function Press(key, count, delayMs)
+	longStop = 0
     Dim i
     If count < 1 Then count = 1
     If delayMs < 0 Then delayMs = 0
@@ -124,15 +128,19 @@ End Function
 // 战斗中逃跑并等待回到大地图
 Function EscapeBattle()
     Press "J", 1, 100
-    Press "A", 1, 100
-    Press "K", 1, 100
-    Press "A", 1, 100
-    Press "K", 1, 100
     Do
         If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
             Exit Do
         End If
-        Delay 500
+        
+        // 在攻击菜单界面 → 执行逃跑指令
+        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+            Press "A", 1, 100
+            Press "K", 1, 200
+            Press "A", 1, 100
+            Press "K", 1, 2000
+        End If
+        Delay 300
     Loop
 End Function
 
@@ -251,7 +259,8 @@ Function DoBait()
     Press "S", 1, 100
     Press "K", 1, 100
     Press "W", 3, 100
-    Press "K", 2, 350
+    Press "K", 2, 200
+    Press "K", 1, 350
     Press "K", 1, 800
 End Function
 
@@ -344,7 +353,7 @@ End Function
 Function HandleBattleSettlement()
 	Delay 200
     // 45mm炮掉落处理
-    If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) And FindImage("45mm列鹿.bmp", 763, 356, 915, 395, 0.95) Then 
+    If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) Then 
         Press "K", 2, 200
         Press "J", 2, 200
         has45 = True
@@ -366,6 +375,12 @@ End Function
 
 // 主循环逻辑：每5ms执行一次，先检测场景，再分发到对应处理函数
 Function MainLoop()
+	longStop = longStop + 1
+	
+	If longStop > 100 Then 
+		Press "J", 2, 100
+	End If
+	
     Dim scene
     scene = DetectScene()
 
