@@ -37,6 +37,7 @@ Function PressHold(key, holdMs)
     KeyDown key, 1
     If holdMs > 0 Then Delay holdMs
     KeyUp key, 1
+    Delay 50
 End Function
 
 // 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
@@ -187,7 +188,8 @@ Function NavigateToBoss()
         
         // 存档位开始（下+左）
 		If Not hitBossDl And FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then 
-			ReleaseAllKeys
+			ReleaseAllKeys 
+			Delay 500
 			PressHold "S", 25
 			KeyDown "A", 1
 			hitBossDl = True
@@ -197,6 +199,7 @@ Function NavigateToBoss()
         // 上左拐角（上+左）
     	If Not hitBossUl And Not foundLandmark And FindImage("3_boss_u_l.bmp", 604, 364, 624, 394, 1) Then 
 			ReleaseAllKeys
+			Delay 500
 			PressHold "W", 25
 			PressHold "A", 50
 			hitBossUl = True
@@ -206,11 +209,11 @@ Function NavigateToBoss()
         // 负1楼（中文）
     	If Not hitBossF1Cn And Not foundLandmark And FindImage("3_boss_负1楼.bmp", 1012, 334, 1049, 354, 1) Then 
 			ReleaseAllKeys 
-			Delay 300
+			Delay 500
 			PressHold "D", 35
 			PressHold "W", 130
 			PressHold "D", 280
-			PressHold "S", 25
+			PressHold "S", 30
 			PressHold "A", 50
 			hitBossF1Cn = True
             foundLandmark = True
@@ -331,21 +334,21 @@ End Function
 Function StartNewRun()
 	Press "J", 3, 200
 	//		刷新
-//	Press "F5", 1, 10
-//	Press "F5", 1, 400
-//	Press "J", 3, 200
-//	Press "S", 1, 100
-//	Press "K", 1, 100
-//	Press "S", 1, 100
-//	Press "K", 6, 50
-//	Press "N", 1, 100
-//	Press "S", 1, 100
-//	Press "K", 1, 100
-//	Delay 1000
-//	Press "K", 2, 200
-//	Delay 2000
-//	Press "K", 2, 200
-//	Delay 300
+	Press "F5", 1, 10
+	Press "F5", 1, 400
+	Press "J", 3, 200
+	Press "S", 1, 100
+	Press "K", 1, 100
+	Press "S", 1, 100
+	Press "K", 6, 50
+	Press "N", 1, 100
+	Press "S", 1, 100
+	Press "K", 1, 100
+	Delay 1000
+	Press "K", 2, 200
+	Delay 2000
+	Press "K", 2, 200
+	Delay 300
 	
 	//    移动
     NavigateToBoss	
