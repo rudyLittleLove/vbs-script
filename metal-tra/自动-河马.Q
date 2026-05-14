@@ -264,16 +264,6 @@ Function HandleBattleScene()
         Exit Function
     End If
 
-    // 怪物出现了
-    If FindImage("巡逻蜂出现.bmp", 217, 586, 455, 597, 0.98) Then
-        Press "J", 2, 100
-        Press "A", 2, 100
-        Press "K", 2, 100
-        Press "A", 2, 100
-        Press "K", 2, 100
-        Exit Function
-    End If
-
     // 炮弹0 → 逃跑回城补充
     If FindImage("炮弹0.bmp", 695, 430, 763, 480, 1) Or FindImage("弹药0.bmp", 213, 585, 355, 626, 0.95) Then
         needRepair = True
@@ -335,6 +325,16 @@ Function HandleMenuScene()
         Exit Function
     End If
 
+    // 怪物出现了
+    If FindImage("巡逻蜂出现.bmp", 217, 586, 456, 598, 0.95) Then
+        Press "J", 2, 100
+        Press "A", 2, 100
+        Press "K", 2, 100
+        Press "A", 2, 100
+        Press "K", 2, 100
+        Exit Function
+    End If
+
     // 取消类
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
@@ -342,6 +342,7 @@ End Function
 
 // 处理战斗结算场景（战斗结束后的掉落/经验结算界面）
 Function HandleBattleSettlement()
+	Delay 200
     // 45mm炮掉落处理
     If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) And FindImage("45mm列鹿.bmp", 763, 356, 915, 395, 0.95) Then 
         Press "K", 2, 200
@@ -349,6 +350,7 @@ Function HandleBattleSettlement()
         has45 = True
         Exit Function
     End If
+    
     // 结算界面通用确认/取消处理
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
@@ -357,6 +359,7 @@ Function HandleBattleSettlement()
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("放入.bmp", 321, 593, 385, 628, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
 End Function
 
 // ==================== 主逻辑 ====================
