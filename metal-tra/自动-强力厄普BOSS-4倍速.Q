@@ -117,7 +117,7 @@ End Function
 
 // 检测是否处于战斗中（通过"攻击"按钮判断）
 Function IsInBattle()
-	IsInBattle = FindImage("攻击.bmp", 212, 508, 327, 552, 1)
+	IsInBattle = FindImage("攻击1.bmp", 209, 518, 294, 525, 1)
 End Function
 
 // 战斗中逃跑
@@ -289,7 +289,7 @@ Function Step3_Floor1Cn()
         PressHold "D", 35
         PressHold "W", 130
         PressHold "D", 280
-        PressHold "S", 30
+        PressHold "S", 25
         PressHold "A", 50
         Step3_Floor1Cn = True
         Exit Function
@@ -344,6 +344,7 @@ End Function
 
 // 步骤7：往下 d1
 Function Step7_Down1()
+    KeyDown "A", 1
     If FindImage("3_boss_d1.bmp", 602, 379, 630, 423, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
@@ -355,7 +356,10 @@ End Function
 
 // 步骤8：往右 r1
 Function Step8_Right1()
-    If FindImgWithDelay("3_boss_r1.bmp", 803, 223, 866, 441, 0.95, "S", 223) Then
+    KeyDown "S", 1
+    // If FindImgWithDelay("3_boss_r1.bmp", 803, 223, 866, 441, 0.95, "S", 223) Then
+    // If FindImage("3_boss_r1.bmp", 803, 223, 866, 289, 0.95) Then
+    If FindImage("3_boss_r1.bmp", 803, 223, 866, 299, 0.95) Then
         ReleaseAllKeys
         KeyDown "D", 1
         Step8_Right1 = True
@@ -366,6 +370,7 @@ End Function
 
 // 步骤9：往下 d2
 Function Step9_Down2()
+    KeyDown "D", 1
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
@@ -377,6 +382,7 @@ End Function
 
 // 步骤10：往右 r2
 Function Step10_Right2()
+    KeyDown "S", 1
     If FindImage("3_boss_r2.bmp", 613, 401, 633, 427, 1) Then
         ReleaseAllKeys
         KeyDown "D", 1
@@ -388,6 +394,7 @@ End Function
 
 // 步骤11：往下 d3
 Function Step11_Down3()
+    KeyDown "D", 1
     If FindImage("3_boss_d3.bmp", 651, 378, 671, 411, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
@@ -399,6 +406,7 @@ End Function
 
 // 步骤12：往左 l2
 Function Step12_Left2()
+    KeyDown "S", 1
     If FindImage("3_boss_l2.bmp", 647, 408, 677, 429, 1) Then
         ReleaseAllKeys
         KeyDown "A", 1
@@ -410,6 +418,7 @@ End Function
 
 // 步骤13：往上 u1
 Function Step13_Up1()
+    KeyDown "A", 1
     If FindImage("3_boss_u1.bmp", 605, 395, 625, 417, 1) Then
         ReleaseAllKeys
         KeyDown "W", 1
@@ -421,6 +430,7 @@ End Function
 
 // 步骤14：下左拐角2
 Function Step14_DownLeft2()
+    KeyDown "W", 1
     If FindImage("3_boos_d_l.bmp", 650, 369, 673, 391, 1) Then
         ReleaseAllKeys
         Delay 100
@@ -434,7 +444,10 @@ End Function
 
 // 步骤15：往下 d4
 Function Step15_Down4()
-    If FindImgWithDelay("3_boss_d4.bmp", 311, 177, 542, 204, 0.95, "A", 511) Then
+    KeyDown "A", 1
+    //If FindImgWithDelay("3_boss_d4.bmp", 311, 177, 542, 204, 0.95, "A", 511) Then
+    //If FindImage("3_boss_d4.bmp", 464, 177, 542, 204, 0.95) Then
+    If FindImage("3_boss_d4.bmp", 444, 177, 542, 204, 0.95) Then
         ReleaseAllKeys
         KeyDown "S", 1
         Step15_Down4 = True
@@ -445,7 +458,10 @@ End Function
 
 // 步骤16：往右 r3
 Function Step16_Right3()
-    If FindImgWithDelay("3_boss_r3.bmp", 264, 468, 298, 700, 0.95, "S", 468) Then
+    KeyDown "S", 1
+    //If FindImgWithDelay("3_boss_r3.bmp", 264, 468, 298, 700, 0.95, "S", 468) Then
+    //If FindImage("3_boss_r3.bmp", 264, 468, 298, 547, 0.95) Then
+    If FindImage("3_boss_r3.bmp", 264, 468, 298, 557, 0.95) Then
         ReleaseAllKeys
         KeyDown "D", 1
         Step16_Right3 = True
@@ -456,7 +472,8 @@ End Function
 
 // 步骤17：往下 d1
 Function Step17_Down1()
-    If FindImage("3_boss_d1.bmp", 602, 379, 630, 423, 1) Then
+    KeyDown "D", 1
+    If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
         Step17_Down1 = True
@@ -467,6 +484,7 @@ End Function
 
 // 步骤18：往右 r4
 Function Step18_Right4()
+    KeyDown "S", 1
     If FindImage("3_boss_r4.bmp", 609, 410, 631, 430, 1) Then
         ReleaseAllKeys
         KeyDown "D", 1
@@ -478,6 +496,7 @@ End Function
 
 // 步骤19：往下 d2
 Function Step19_Down2()
+    KeyDown "D", 1
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
@@ -552,46 +571,32 @@ Function NavigateToBoss()
     // 左 下 右 下 右 下 左 上 下左 下 右 下 右 下
     // 第6步：往左 l1
     LoopWithBattle "Step6"
-    
     // 第7步：往下 d1
     LoopWithBattle "Step7"
-    
     // 第8步：往右 r1
     LoopWithBattle "Step8"
-    
     // 第9步：往下 d2
     LoopWithBattle "Step9"
-    
     // 第10步：往右 r2
     LoopWithBattle "Step10"
-    
     // 第11步：往下 d3
     LoopWithBattle "Step11"
-    
     // 第12步：往左 l2
     LoopWithBattle "Step12"
-    
     // 第13步：往上 u1
     LoopWithBattle "Step13"
-    
     // 第14步：下左拐角2
     LoopWithBattle "Step14"
-    
     // 第15步：往下 d4
     LoopWithBattle "Step15"
-    
     // 第16步：往右 r3
     LoopWithBattle "Step16"
-    
     // 第17步：往下 d1
     LoopWithBattle "Step17"
-    
     // 第18步：往右 r4
     LoopWithBattle "Step18"
-    
     // 第19步：往下 d2
     LoopWithBattle "Step19"
-    
     // 第20步：诱敌位置（不需要战斗）
     LoopWithoutBattle "Step20"
     
