@@ -168,171 +168,438 @@ Function HandleBattle()
     End If
 End Function
 
-// 地图导航配置：地标图 -> 检测区域 -> 到达后执行的动作
-// 使用数组风格，但Q语言不支持数组，直接用顺序判断
-Function NavigateToBoss()
-	// 当前循环内地标命中标记（通用方向不需要标记）
-	Dim hitBossDl, hitBossUl, hitBossF1Cn, hitBossF1Sym, hitBossF3, hitBossDL2
-	hitBossDl = False
-	hitBossUl = False
-	hitBossF1Cn = False
-	hitBossF1Sym = False
-	hitBossF3 = False
-	hitBossDL2 = False
-	
-	Do
-        Dim foundLandmark
-        foundLandmark = False
-        
+// ==================== 通用循环体：带战斗的循环 ====================
+Function LoopWithBattle(stepName)
+    Do
         Dim startTime
+        Dim result
         startTime = Plugin.GetSysInfo.GetTime
         
-        // 存档位开始（下+左）
-		If Not hitBossDl And FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then 
-			ReleaseAllKeys 
-			Delay 500
-			PressHold "S", 25
-			KeyDown "A", 1
-			hitBossDl = True
-            foundLandmark = True
-    	End If
-    	
-        // 上左拐角（上+左）
-    	If Not hitBossUl And Not foundLandmark And FindImage("3_boss_u_l.bmp", 604, 364, 624, 394, 1) Then 
-			ReleaseAllKeys
-			Delay 500
-			PressHold "W", 25
-			PressHold "A", 50
-			hitBossUl = True
-            foundLandmark = True
-    	End If
+        result = False
+        Select Case stepName
+            Case "Step1"
+                result = Step1_SavePoint()
+            Case "Step2"
+                result = Step2_UpperLeft()
+            Case "Step3"
+                result = Step3_Floor1Cn()
+            Case "Step4"
+                result = Step4_Floor1Sym()
+            Case "Step5"
+                result = Step5_Floor3()
+            Case "Step6"
+                result = Step6_Left1()
+            Case "Step7"
+                result = Step7_Down1()
+            Case "Step8"
+                result = Step8_Right1()
+            Case "Step9"
+                result = Step9_Down2()
+            Case "Step10"
+                result = Step10_Right2()
+            Case "Step11"
+                result = Step11_Down3()
+            Case "Step12"
+                result = Step12_Left2()
+            Case "Step13"
+                result = Step13_Up1()
+            Case "Step14"
+                result = Step14_DownLeft2()
+            Case "Step15"
+                result = Step15_Down4()
+            Case "Step16"
+                result = Step16_Right3()
+            Case "Step17"
+                result = Step17_Down1()
+            Case "Step18"
+                result = Step18_Right4()
+            Case "Step19"
+                result = Step19_Down2()
+        End Select
         
-        // 负1楼（中文）
-    	If Not hitBossF1Cn And Not foundLandmark And FindImage("3_boss_负1楼.bmp", 1012, 334, 1049, 354, 1) Then 
-			ReleaseAllKeys 
-			Delay 500
-			PressHold "D", 35
-			PressHold "W", 130
-			PressHold "D", 280
-			PressHold "S", 30
-			PressHold "A", 50
-			hitBossF1Cn = True
-            foundLandmark = True
-    	End If
+        If result Then
+            LoopWithBattle = True
+            Exit Function
+        End If
         
-        // -1楼（符号）
-    	If Not hitBossF1Sym And Not foundLandmark And FindImage("3_boss_-1楼.bmp", 645, 360, 669, 424, 1) Then 
-			ReleaseAllKeys
-			PressHold "D", 40
-			PressHold "W", 75
-			PressHold "A", 190
-			hitBossF1Sym = True
-            foundLandmark = True
-    	End If
-        
-        // 负3楼
-    	If Not hitBossF3 And Not foundLandmark And FindImage("3_boss_负3楼.bmp", 608, 367, 630, 420, 1) Then 
-			ReleaseAllKeys
-			PressHold "S", 140
-			PressHold "A", 140
-			PressHold "S", 140
-			PressHold "A", 75
-			PressHold "W", 400
-			PressHold "A", 50
-			PressHold "W", 400
-			PressHold "A", 120
-			PressHold "W", 60
-			PressHold "A", 70
-			KeyDown "S", 1
-			hitBossF3 = True
-            foundLandmark = True
-    	End If
-    	
-    	// 下左拐角（下+左）
-    	If Not hitBossDL2 And Not foundLandmark And FindImage("3_boos_d_l.bmp", 650, 369, 673, 391, 1) Then 
-			ReleaseAllKeys 
-			Delay 100
-			PressHold "S", 30
-			KeyDown "A", 1
-			hitBossDL2 = True
-            foundLandmark = True
-    	End If
-        
-        // 往左（通用方向，不标记）
-    	If Not foundLandmark  Then 
-    	    If FindImage("3_boss_l1.bmp", 617, 407, 664, 431, 1) Or FindImage("3_boss_l2.bmp", 647, 408, 677, 429, 1) Then     	    	
-				ReleaseAllKeys
-				KeyDown "A", 1
-            	foundLandmark = True
-    	    End If
-    	End If
-        
-        // 往下（通用方向，不标记）
-    	If Not foundLandmark Then 
-    		If FindImage("3_boss_d1.bmp", 602, 379, 630, 423, 1) Or FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Or FindImage("3_boss_d3.bmp", 651, 378, 671, 411, 1) Or FindImgWithDelay("3_boss_d4.bmp", 311, 177, 542, 204, 0.95, "A", 511) Then 					
-				ReleaseAllKeys
-				KeyDown "S", 1
-            	foundLandmark = True
-    		End If
-    	End If
-        
-        // 往右（带预找图补偿，通用方向，不标记）
-    	If Not foundLandmark  Then 
-    		If FindImgWithDelay("3_boss_r1.bmp", 803, 223, 866, 441, 0.95, "S", 223) Or FindImage("3_boss_r2.bmp", 613, 401, 633, 427, 1) Or FindImgWithDelay("3_boss_r3.bmp", 264, 468, 298, 700, 0.95, "S", 468) Or FindImage("3_boss_r4.bmp", 609, 410, 631, 430, 1) Then     			
-				ReleaseAllKeys
-				KeyDown "D", 1
-            	foundLandmark = True
-    		End If
-    	End If
+        TracePrint "战前时间：" & Plugin.GetSysInfo.GetTime - startTime
+        HandleBattle
+        TracePrint "最终时间：" & Plugin.GetSysInfo.GetTime - startTime
+    Loop
+End Function
 
-		// 往上（通用方向，不标记）
-		If Not foundLandmark And FindImage("3_boss_u1.bmp", 605, 395, 625, 417, 1) Then 
-			ReleaseAllKeys
-			KeyDown "W", 1
-            foundLandmark = True
-    	End If
-    	
-    	// 到达诱敌位置
-		If Not foundLandmark And FindImage("3_boss_over.bmp", 621, 419, 665, 435, 1) Then 
-			ReleaseAllKeys 
-			Press "h", 1, 100
-    		Press "K", 2, 100
-        	Press "S", 1, 100
-        	Press "K", 1, 100
-        	Press "W", 1, 100
-        	Press "K", 3, 100
-        	Press "J", 5, 100
-            foundLandmark = True
-    	End If
-    	
-    	// 检测到发现了（战斗结束有掉落），跳出寻路循环进入5星判断
-    	If FindImage("发现了.bmp", 216, 584, 322, 625, 1) Then 
-    		reload = 0
-			Exit Do
-    	End If
-    	
-    	TracePrint  "战前时间：" & Plugin.GetSysInfo.GetTime - startTime 
-    	
-    	HandleBattle 
-    	
-    	TracePrint  "最终时间：" & Plugin.GetSysInfo.GetTime - startTime 
-	Loop
-	
-	// 战斗结束有掉落，单次判断5星
-	// 检测到5星掉落，停止脚本
-	If FindImage("5星.bmp", 530, 552, 673, 637, 0.96) Then 
-		KeyPress 175, 20
-		KeyDown "Ctrl", 1
-		KeyDown "Alt", 1
-		KeyDown "3", 1
-		Delay 300
-		KeyUp "Ctrl", 1
-		KeyUp "Alt", 1
-		KeyUp "3", 1
-		KeyPress "F12", 1 // 退出脚本快捷键
-		
-	End If
-	// 非5星，直接返回，外层循环会调用StartNewRun重置流程
+// ==================== 通用循环体：不带战斗的循环 ====================
+Function LoopWithoutBattle(stepName)
+    Do
+        Dim startTime
+        Dim result
+        startTime = Plugin.GetSysInfo.GetTime
+        
+        result = False
+        Select Case stepName
+            Case "Step20"
+                result = Step20_BaitPosition()
+            Case "Step21"
+                result = Step21_Found()
+        End Select
+        
+        If result Then
+            LoopWithoutBattle = True
+            Exit Function
+        End If
+        
+        TracePrint "战前时间：" & Plugin.GetSysInfo.GetTime - startTime
+        TracePrint "最终时间：" & Plugin.GetSysInfo.GetTime - startTime
+    Loop
+End Function
+
+// ==================== 各步骤判断逻辑 ====================
+
+// 步骤1：存档位开始
+Function Step1_SavePoint()
+    If FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then
+        ReleaseAllKeys
+        Delay 500
+        PressHold "S", 25
+        KeyDown "A", 1
+        Step1_SavePoint = True
+        Exit Function
+    End If
+    Step1_SavePoint = False
+End Function
+
+// 步骤2：上左拐角
+Function Step2_UpperLeft()
+    If FindImage("3_boss_u_l.bmp", 604, 364, 624, 394, 1) Then
+        ReleaseAllKeys
+        Delay 500
+        PressHold "W", 25
+        PressHold "A", 50
+        Step2_UpperLeft = True
+        Exit Function
+    End If
+    Step2_UpperLeft = False
+End Function
+
+// 步骤3：负1楼（中文）
+Function Step3_Floor1Cn()
+    If FindImage("3_boss_负1楼.bmp", 1012, 334, 1049, 354, 1) Then
+        ReleaseAllKeys
+        Delay 500
+        PressHold "D", 35
+        PressHold "W", 130
+        PressHold "D", 280
+        PressHold "S", 30
+        PressHold "A", 50
+        Step3_Floor1Cn = True
+        Exit Function
+    End If
+    Step3_Floor1Cn = False
+End Function
+
+// 步骤4：-1楼（符号）
+Function Step4_Floor1Sym()
+    If FindImage("3_boss_-1楼.bmp", 645, 360, 669, 424, 1) Then
+        ReleaseAllKeys
+        PressHold "D", 40
+        PressHold "W", 75
+        PressHold "A", 190
+        Step4_Floor1Sym = True
+        Exit Function
+    End If
+    Step4_Floor1Sym = False
+End Function
+
+// 步骤5：负3楼
+Function Step5_Floor3()
+    If FindImage("3_boss_负3楼.bmp", 608, 367, 630, 420, 1) Then
+        ReleaseAllKeys
+        PressHold "S", 140
+        PressHold "A", 140
+        PressHold "S", 140
+        PressHold "A", 75
+        PressHold "W", 400
+        PressHold "A", 50
+        PressHold "W", 400
+        PressHold "A", 120
+        PressHold "W", 60
+        PressHold "A", 70
+        KeyDown "S", 1
+        Step5_Floor3 = True
+        Exit Function
+    End If
+    Step5_Floor3 = False
+End Function
+
+// 步骤6：往左 l1
+Function Step6_Left1()
+    If FindImage("3_boss_l1.bmp", 617, 407, 664, 431, 1) Then
+        ReleaseAllKeys
+        KeyDown "A", 1
+        Step6_Left1 = True
+        Exit Function
+    End If
+    Step6_Left1 = False
+End Function
+
+// 步骤7：往下 d1
+Function Step7_Down1()
+    If FindImage("3_boss_d1.bmp", 602, 379, 630, 423, 1) Then
+        ReleaseAllKeys
+        KeyDown "S", 1
+        Step7_Down1 = True
+        Exit Function
+    End If
+    Step7_Down1 = False
+End Function
+
+// 步骤8：往右 r1
+Function Step8_Right1()
+    If FindImgWithDelay("3_boss_r1.bmp", 803, 223, 866, 441, 0.95, "S", 223) Then
+        ReleaseAllKeys
+        KeyDown "D", 1
+        Step8_Right1 = True
+        Exit Function
+    End If
+    Step8_Right1 = False
+End Function
+
+// 步骤9：往下 d2
+Function Step9_Down2()
+    If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
+        ReleaseAllKeys
+        KeyDown "S", 1
+        Step9_Down2 = True
+        Exit Function
+    End If
+    Step9_Down2 = False
+End Function
+
+// 步骤10：往右 r2
+Function Step10_Right2()
+    If FindImage("3_boss_r2.bmp", 613, 401, 633, 427, 1) Then
+        ReleaseAllKeys
+        KeyDown "D", 1
+        Step10_Right2 = True
+        Exit Function
+    End If
+    Step10_Right2 = False
+End Function
+
+// 步骤11：往下 d3
+Function Step11_Down3()
+    If FindImage("3_boss_d3.bmp", 651, 378, 671, 411, 1) Then
+        ReleaseAllKeys
+        KeyDown "S", 1
+        Step11_Down3 = True
+        Exit Function
+    End If
+    Step11_Down3 = False
+End Function
+
+// 步骤12：往左 l2
+Function Step12_Left2()
+    If FindImage("3_boss_l2.bmp", 647, 408, 677, 429, 1) Then
+        ReleaseAllKeys
+        KeyDown "A", 1
+        Step12_Left2 = True
+        Exit Function
+    End If
+    Step12_Left2 = False
+End Function
+
+// 步骤13：往上 u1
+Function Step13_Up1()
+    If FindImage("3_boss_u1.bmp", 605, 395, 625, 417, 1) Then
+        ReleaseAllKeys
+        KeyDown "W", 1
+        Step13_Up1 = True
+        Exit Function
+    End If
+    Step13_Up1 = False
+End Function
+
+// 步骤14：下左拐角2
+Function Step14_DownLeft2()
+    If FindImage("3_boos_d_l.bmp", 650, 369, 673, 391, 1) Then
+        ReleaseAllKeys
+        Delay 100
+        PressHold "S", 30
+        KeyDown "A", 1
+        Step14_DownLeft2 = True
+        Exit Function
+    End If
+    Step14_DownLeft2 = False
+End Function
+
+// 步骤15：往下 d4
+Function Step15_Down4()
+    If FindImgWithDelay("3_boss_d4.bmp", 311, 177, 542, 204, 0.95, "A", 511) Then
+        ReleaseAllKeys
+        KeyDown "S", 1
+        Step15_Down4 = True
+        Exit Function
+    End If
+    Step15_Down4 = False
+End Function
+
+// 步骤16：往右 r3
+Function Step16_Right3()
+    If FindImgWithDelay("3_boss_r3.bmp", 264, 468, 298, 700, 0.95, "S", 468) Then
+        ReleaseAllKeys
+        KeyDown "D", 1
+        Step16_Right3 = True
+        Exit Function
+    End If
+    Step16_Right3 = False
+End Function
+
+// 步骤17：往下 d1
+Function Step17_Down1()
+    If FindImage("3_boss_d1.bmp", 602, 379, 630, 423, 1) Then
+        ReleaseAllKeys
+        KeyDown "S", 1
+        Step17_Down1 = True
+        Exit Function
+    End If
+    Step17_Down1 = False
+End Function
+
+// 步骤18：往右 r4
+Function Step18_Right4()
+    If FindImage("3_boss_r4.bmp", 609, 410, 631, 430, 1) Then
+        ReleaseAllKeys
+        KeyDown "D", 1
+        Step18_Right4 = True
+        Exit Function
+    End If
+    Step18_Right4 = False
+End Function
+
+// 步骤19：往下 d2
+Function Step19_Down2()
+    If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
+        ReleaseAllKeys
+        KeyDown "S", 1
+        Step19_Down2 = True
+        Exit Function
+    End If
+    Step19_Down2 = False
+End Function
+
+// 步骤20：诱敌位置
+Function Step20_BaitPosition()
+    If FindImage("3_boss_over.bmp", 621, 419, 665, 435, 1) Then
+        ReleaseAllKeys
+        Press "h", 1, 100
+        Press "K", 2, 100
+        Press "S", 1, 100
+        Press "K", 1, 100
+        Press "W", 1, 100
+        Press "K", 3, 100
+        Press "J", 5, 100
+        Step20_BaitPosition = True
+        Exit Function
+    End If
+    Step20_BaitPosition = False
+End Function
+
+// 步骤21：发现了
+Function Step21_Found()
+    If FindImage("发现了.bmp", 216, 584, 322, 625, 1) Then
+        reload = 0
+        Step21_Found = True
+        Exit Function
+    End If
+    Step21_Found = False
+End Function
+
+// ==================== 5星判断 ====================
+Function Check5Star()
+    If FindImage("5星.bmp", 530, 552, 673, 637, 0.96) Then
+        KeyPress 175, 20
+        KeyDown "Ctrl", 1
+        KeyDown "Alt", 1
+        KeyDown "3", 1
+        Delay 300
+        KeyUp "Ctrl", 1
+        KeyUp "Alt", 1
+        KeyUp "3", 1
+        KeyPress "F12", 1
+        Check5Star = True
+        Exit Function
+    End If
+    Check5Star = False
+End Function
+
+// ==================== 主流程：一步一步执行 ====================
+Function NavigateToBoss()
+    // 第1步：存档位
+    LoopWithBattle "Step1"
+    
+    // 第2步：上左拐角
+    LoopWithBattle "Step2"
+    
+    // 第3步：负1楼（中文）
+    LoopWithBattle "Step3"
+    
+    // 第4步：-1楼（符号）
+    LoopWithBattle "Step4"
+    
+    // 第5步：负3楼
+    LoopWithBattle "Step5"
+    
+    // 左 下 右 下 右 下 左 上 下左 下 右 下 右 下
+    // 第6步：往左 l1
+    LoopWithBattle "Step6"
+    
+    // 第7步：往下 d1
+    LoopWithBattle "Step7"
+    
+    // 第8步：往右 r1
+    LoopWithBattle "Step8"
+    
+    // 第9步：往下 d2
+    LoopWithBattle "Step9"
+    
+    // 第10步：往右 r2
+    LoopWithBattle "Step10"
+    
+    // 第11步：往下 d3
+    LoopWithBattle "Step11"
+    
+    // 第12步：往左 l2
+    LoopWithBattle "Step12"
+    
+    // 第13步：往上 u1
+    LoopWithBattle "Step13"
+    
+    // 第14步：下左拐角2
+    LoopWithBattle "Step14"
+    
+    // 第15步：往下 d4
+    LoopWithBattle "Step15"
+    
+    // 第16步：往右 r3
+    LoopWithBattle "Step16"
+    
+    // 第17步：往下 d1
+    LoopWithBattle "Step17"
+    
+    // 第18步：往右 r4
+    LoopWithBattle "Step18"
+    
+    // 第19步：往下 d2
+    LoopWithBattle "Step19"
+    
+    // 第20步：诱敌位置（不需要战斗）
+    LoopWithoutBattle "Step20"
+    
+    // 第21步：发现了（不需要战斗）
+    LoopWithoutBattle "Step21"
+    
+    // 5星判断
+    Check5Star
 End Function
 
 // 刷新游戏并导航到目标位置
