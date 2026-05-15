@@ -37,7 +37,6 @@ Function PressHold(key, holdMs)
     KeyDown key, 1
     If holdMs > 0 Then Delay holdMs
     KeyUp key, 1
-    Delay 50
 End Function
 
 // 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
@@ -145,8 +144,7 @@ Function FightBoss()
 End Function
 
 Function HandleBattle()
-    Press "J", 1, 0
-    
+	Press "J", 1, 0
     // 判断是否进入战斗
     If Not IsInBattle() Then
         // 未战斗，累加卡死计数器
@@ -185,6 +183,9 @@ Function NavigateToBoss()
 	Do
         Dim foundLandmark
         foundLandmark = False
+        
+        Dim startTime
+        startTime = Plugin.GetSysInfo.GetTime
         
         // 存档位开始（下+左）
 		If Not hitBossDl And FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then 
@@ -310,7 +311,11 @@ Function NavigateToBoss()
 			Exit Do
     	End If
     	
+    	TracePrint  "战前时间：" & Plugin.GetSysInfo.GetTime - startTime 
+    	
     	HandleBattle 
+    	
+    	TracePrint  "最终时间：" & Plugin.GetSysInfo.GetTime - startTime 
 	Loop
 	
 	// 战斗结束有掉落，单次判断5星
@@ -334,21 +339,21 @@ End Function
 Function StartNewRun()
 	Press "J", 3, 200
 	//		刷新
-	Press "F5", 1, 10
-	Press "F5", 1, 400
-	Press "J", 3, 200
-	Press "S", 1, 100
-	Press "K", 1, 100
-	Press "S", 1, 100
-	Press "K", 6, 50
-	Press "N", 1, 100
-	Press "S", 1, 100
-	Press "K", 1, 100
-	Delay 1000
-	Press "K", 2, 200
-	Delay 2000
-	Press "K", 2, 200
-	Delay 300
+//	Press "F5", 1, 10
+//	Press "F5", 1, 400
+//	Press "J", 3, 200
+//	Press "S", 1, 100
+//	Press "K", 1, 100
+//	Press "S", 1, 100
+//	Press "K", 6, 50
+//	Press "N", 1, 100
+//	Press "S", 1, 100
+//	Press "K", 1, 100
+//	Delay 1000
+//	Press "K", 2, 200
+//	Delay 2000
+//	Press "K", 2, 200
+//	Delay 300
 	
 	//    移动
     NavigateToBoss	
