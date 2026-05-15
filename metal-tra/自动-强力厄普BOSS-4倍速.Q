@@ -11,6 +11,13 @@ Const STUCK_THRESHOLD = 30
 Dim reload, currDown
 reload = 0
 
+// 单步超时检测（毫秒）
+Const STEP_TIMEOUT = 10000
+
+// 记录当前步骤开始时间
+Dim stepStartTime
+stepStartTime = 0
+
 // 在指定区域找图，找到则按键并返回 true
 Function FindAndPress(imgName, x1, y1, x2, y2, similarity, key, delayMs)
     Dim intX, intY
@@ -117,63 +124,93 @@ End Function
 
 // 检测是否处于战斗中（通过"攻击"按钮判断）
 Function IsInBattle()
-	IsInBattle = FindImage("攻击1.bmp", 209, 518, 294, 525, 1)
+	IsInBattle = FindImage("怪物出现边框.bmp", 180, 562, 195, 578, 1)
 End Function
 
 // 战斗中逃跑
 Function EscapeBattle()
 	Press "J", 1, 100
-	Press "A", 1, 100
-	Press "K", 1, 100
-	Press "A", 1, 100
-	Press "K", 1, 100
+    Press "J", 1, 200
+    Do
+        // 如果已经在大地图了，说明逃跑成功
+        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
+            Exit Do
+            Exit Function
+        End If
+        
+        // 在攻击菜单界面 → 执行逃跑指令
+        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+            Press "A", 1, 100
+            Press "K", 1, 200
+            Press "A", 1, 100
+            Press "K", 1, 100
+        End If
+        Delay 300
+    Loop
 End Function
 
 // 蝎子BOSS战斗流程
 Function FightBoss()
 	Press "J", 1, 100
-	// 一号攻击
-	Press "D", 2, 100
-	Press "K", 1, 100
-	Press "S", 1, 100
-	Press "K", 1, 100
-	Press "D", 1, 100
-	Press "K", 2, 100
-	// 二号攻击
-	Press "K", 2, 100
+    TracePrint "开始战斗"
+    Do
+        // 如果已经在大地图了，说明逃跑成功
+        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
+            Exit Do
+            Exit Function
+        End If
+        
+        // 在攻击菜单界面 → 执行逃跑指令
+        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+            TracePrint "开始攻击"   
+            // 一号攻击
+            Press "D", 2, 100
+            Press "K", 1, 100
+            Press "S", 1, 100
+            Press "K", 1, 100
+            Press "D", 1, 100
+            Press "K", 2, 100
+            // 二号攻击
+            Press "K", 2, 100
+        End If
+        Delay 300
+    Loop
 End Function
 
 Function HandleBattle()
-	Press "J", 1, 0
     // 判断是否进入战斗
     If Not IsInBattle() Then
-        // 未战斗，累加卡死计数器
-        reload = reload + 1
-        If reload > STUCK_THRESHOLD Then 
-            reload = 0
-            // 寻路卡死，重置流程
-            StartNewRun
-        End If
         Exit Function
     End If
     
-    // 进入战斗，重置卡死计数器
-    reload = 0
-    
+    ReleaseAllKeys
     // 判断是否是蝎子BOSS
-    If FindImage("蝎子.bmp", 178, 114, 788, 531, 1) Then 
+    If FindImage("厄普.bmp", 178, 114, 788, 531, 1) Then 
         FightBoss
     Else		
         EscapeBattle
     End If
 End Function
 
-// ==================== 通用循环体：带战斗的循环 ====================
-Function LoopWithBattle(stepName)
+// ==================== 通用循环体 ====================
+// needBattle: True=需要执行HandleBattle, False=不需要
+Function LoopWithBattle(stepName, needBattle)
+    stepStartTime = Plugin.GetSysInfo.GetTime
     Do
-        Dim startTime
+        //Dim startTime
         Dim result
-        startTime = Plugin.GetSysInfo.GetTime
+        //startTime = Plugin.GetSysInfo.GetTime
+        
+        // 检测单步超时
+        If Plugin.GetSysInfo.GetTime - stepStartTime > STEP_TIMEOUT Then
+            reload = reload + 1
+            If reload > STUCK_THRESHOLD Then
+                reload = 0
+                StartNewRun
+            End If
+            LoopWithBattle = False
+            Exit Function
+        End If
         
         result = False
         Select Case stepName
@@ -215,28 +252,6 @@ Function LoopWithBattle(stepName)
                 result = Step18_Right4()
             Case "Step19"
                 result = Step19_Down2()
-        End Select
-        
-        If result Then
-            LoopWithBattle = True
-            Exit Function
-        End If
-        
-        TracePrint "战前时间：" & Plugin.GetSysInfo.GetTime - startTime
-        HandleBattle
-        TracePrint "最终时间：" & Plugin.GetSysInfo.GetTime - startTime
-    Loop
-End Function
-
-// ==================== 通用循环体：不带战斗的循环 ====================
-Function LoopWithoutBattle(stepName)
-    Do
-        Dim startTime
-        Dim result
-        startTime = Plugin.GetSysInfo.GetTime
-        
-        result = False
-        Select Case stepName
             Case "Step20"
                 result = Step20_BaitPosition()
             Case "Step21"
@@ -244,12 +259,12 @@ Function LoopWithoutBattle(stepName)
         End Select
         
         If result Then
-            LoopWithoutBattle = True
+            reload = 0
+            LoopWithBattle = True
             Exit Function
         End If
         
-        TracePrint "战前时间：" & Plugin.GetSysInfo.GetTime - startTime
-        TracePrint "最终时间：" & Plugin.GetSysInfo.GetTime - startTime
+        If needBattle Then HandleBattle
     Loop
 End Function
 
@@ -259,7 +274,6 @@ End Function
 Function Step1_SavePoint()
     If FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then
         ReleaseAllKeys
-        Delay 500
         PressHold "S", 25
         KeyDown "A", 1
         Step1_SavePoint = True
@@ -272,7 +286,6 @@ End Function
 Function Step2_UpperLeft()
     If FindImage("3_boss_u_l.bmp", 604, 364, 624, 394, 1) Then
         ReleaseAllKeys
-        Delay 500
         PressHold "W", 25
         PressHold "A", 50
         Step2_UpperLeft = True
@@ -285,7 +298,6 @@ End Function
 Function Step3_Floor1Cn()
     If FindImage("3_boss_负1楼.bmp", 1012, 334, 1049, 354, 1) Then
         ReleaseAllKeys
-        Delay 500
         PressHold "D", 35
         PressHold "W", 130
         PressHold "D", 280
@@ -359,7 +371,7 @@ Function Step8_Right1()
     KeyDown "S", 1
     // If FindImgWithDelay("3_boss_r1.bmp", 803, 223, 866, 441, 0.95, "S", 223) Then
     // If FindImage("3_boss_r1.bmp", 803, 223, 866, 289, 0.95) Then
-    If FindImage("3_boss_r1.bmp", 803, 223, 866, 299, 0.95) Then
+    If FindImage("3_boss_r1.bmp", 803, 223, 866, 290, 0.95) Then
         ReleaseAllKeys
         KeyDown "D", 1
         Step8_Right1 = True
@@ -407,7 +419,7 @@ End Function
 // 步骤12：往左 l2
 Function Step12_Left2()
     KeyDown "S", 1
-    If FindImage("3_boss_l2.bmp", 647, 408, 677, 429, 1) Then
+    If FindImage("3_boss_l2.bmp", 621, 397, 683, 440, 1) Then
         ReleaseAllKeys
         KeyDown "A", 1
         Step12_Left2 = True
@@ -431,10 +443,9 @@ End Function
 // 步骤14：下左拐角2
 Function Step14_DownLeft2()
     KeyDown "W", 1
-    If FindImage("3_boos_d_l.bmp", 650, 369, 673, 391, 1) Then
+    If FindImage("3_boos_d_l.bmp", 597, 376, 679, 398, 1) Then
         ReleaseAllKeys
-        Delay 100
-        PressHold "S", 30
+        PressHold "S", 25
         KeyDown "A", 1
         Step14_DownLeft2 = True
         Exit Function
@@ -447,7 +458,7 @@ Function Step15_Down4()
     KeyDown "A", 1
     //If FindImgWithDelay("3_boss_d4.bmp", 311, 177, 542, 204, 0.95, "A", 511) Then
     //If FindImage("3_boss_d4.bmp", 464, 177, 542, 204, 0.95) Then
-    If FindImage("3_boss_d4.bmp", 444, 177, 542, 204, 0.95) Then
+    If FindImage("3_boss_d4.bmp", 464, 177, 542, 204, 0.95) Then
         ReleaseAllKeys
         KeyDown "S", 1
         Step15_Down4 = True
@@ -508,6 +519,7 @@ End Function
 
 // 步骤20：诱敌位置
 Function Step20_BaitPosition()
+    KeyDown "S", 1
     If FindImage("3_boss_over.bmp", 621, 419, 665, 435, 1) Then
         ReleaseAllKeys
         Press "h", 1, 100
@@ -554,78 +566,81 @@ End Function
 // ==================== 主流程：一步一步执行 ====================
 Function NavigateToBoss()
     // 第1步：存档位
-    LoopWithBattle "Step1"
+    LoopWithBattle "Step1", False
     
     // 第2步：上左拐角
-    LoopWithBattle "Step2"
+    LoopWithBattle "Step2", False
     
     // 第3步：负1楼（中文）
-    LoopWithBattle "Step3"
+    LoopWithBattle "Step3", False
     
     // 第4步：-1楼（符号）
-    LoopWithBattle "Step4"
+    LoopWithBattle "Step4", False
     
     // 第5步：负3楼
-    LoopWithBattle "Step5"
+    LoopWithBattle "Step5", False
     
     // 左 下 右 下 右 下 左 上 下左 下 右 下 右 下
     // 第6步：往左 l1
-    LoopWithBattle "Step6"
+    LoopWithBattle "Step6", True
     // 第7步：往下 d1
-    LoopWithBattle "Step7"
+    LoopWithBattle "Step7", True
     // 第8步：往右 r1
-    LoopWithBattle "Step8"
+    LoopWithBattle "Step8", True
     // 第9步：往下 d2
-    LoopWithBattle "Step9"
+    LoopWithBattle "Step9", True
     // 第10步：往右 r2
-    LoopWithBattle "Step10"
+    LoopWithBattle "Step10", True
     // 第11步：往下 d3
-    LoopWithBattle "Step11"
+    LoopWithBattle "Step11", True
     // 第12步：往左 l2
-    LoopWithBattle "Step12"
+    LoopWithBattle "Step12", True
     // 第13步：往上 u1
-    LoopWithBattle "Step13"
+    LoopWithBattle "Step13", True
     // 第14步：下左拐角2
-    LoopWithBattle "Step14"
+    LoopWithBattle "Step14", True
     // 第15步：往下 d4
-    LoopWithBattle "Step15"
+    LoopWithBattle "Step15", True
     // 第16步：往右 r3
-    LoopWithBattle "Step16"
+    LoopWithBattle "Step16", True
     // 第17步：往下 d1
-    LoopWithBattle "Step17"
+    LoopWithBattle "Step17", True
     // 第18步：往右 r4
-    LoopWithBattle "Step18"
+    LoopWithBattle "Step18", True
     // 第19步：往下 d2
-    LoopWithBattle "Step19"
+    LoopWithBattle "Step19", True
     // 第20步：诱敌位置（不需要战斗）
-    LoopWithoutBattle "Step20"
+    LoopWithBattle "Step20", True
     
     // 第21步：发现了（不需要战斗）
-    LoopWithoutBattle "Step21"
+    LoopWithBattle "Step21", False
     
     // 5星判断
-    Check5Star
+    Check5Star 
+    
+    ReleaseAllKeys
 End Function
 
 // 刷新游戏并导航到目标位置
 Function StartNewRun()
+    ReleaseAllKeys
 	Press "J", 3, 200
 	//		刷新
-//	Press "F5", 1, 10
-//	Press "F5", 1, 400
-//	Press "J", 3, 200
-//	Press "S", 1, 100
-//	Press "K", 1, 100
-//	Press "S", 1, 100
-//	Press "K", 6, 50
-//	Press "N", 1, 100
-//	Press "S", 1, 100
-//	Press "K", 1, 100
-//	Delay 1000
-//	Press "K", 2, 200
-//	Delay 2000
-//	Press "K", 2, 200
-//	Delay 300
+	Press "F5", 1, 10
+	Press "F5", 1, 400
+	Press "J", 3, 200
+	Press "S", 1, 100
+	Press "K", 1, 100
+	Press "S", 1, 100
+	Press "K", 6, 50
+	Press "N", 1, 100
+	Press "S", 1, 100
+	Press "K", 1, 100
+	Delay 1000
+	Press "K", 2, 200
+	Delay 1200
+	Press "K", 2, 200
+	Delay 300
 	
 	//    移动
     NavigateToBoss	
@@ -634,5 +649,5 @@ End Function
 // ==================== 入口 ====================
 Do
     StartNewRun
-    Delay 10
+    Delay 100
 Loop
