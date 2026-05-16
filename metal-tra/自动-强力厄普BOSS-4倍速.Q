@@ -159,6 +159,12 @@ Function FightBoss()
             Exit Do
             Exit Function
         End If
+
+        If FindImage("怪物出现边框.bmp", 180, 562, 195, 578, 1) Then
+            Delay 200
+            KeyPress "J", 1
+            Exit Function
+        End If
         
         // 在攻击菜单界面 → 执行逃跑指令
         If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
@@ -184,12 +190,8 @@ Function HandleBattle()
     End If
     
     ReleaseAllKeys
-    // 判断是否是蝎子BOSS
-    If FindImage("厄普.bmp", 178, 114, 788, 531, 1) Then 
-        FightBoss
-    Else		
-        EscapeBattle
-    End If
+
+    EscapeBattle
 End Function
 
 // ==================== 通用循环体 ====================
@@ -484,6 +486,9 @@ End Function
 // 步骤17：往下 d1
 Function Step17_Down1()
     KeyDown "D", 1
+    If FindImage("3_boss_d_r.bmp", 643, 376, 687, 440, 1) Then
+        Press "D", 1, 100
+    End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
@@ -522,13 +527,6 @@ Function Step20_BaitPosition()
     KeyDown "S", 1
     If FindImage("3_boss_over.bmp", 621, 419, 665, 435, 1) Then
         ReleaseAllKeys
-        Press "h", 1, 100
-        Press "K", 2, 100
-        Press "S", 1, 100
-        Press "K", 1, 100
-        Press "W", 1, 100
-        Press "K", 3, 100
-        Press "J", 5, 100
         Step20_BaitPosition = True
         Exit Function
     End If
@@ -547,8 +545,9 @@ End Function
 
 // ==================== 5星判断 ====================
 Function Check5Star()
-    If FindImage("5星.bmp", 530, 552, 673, 637, 0.96) Then
-        KeyPress 175, 20
+    // 410, 580, 702, 628 盖亚机组坐标
+    // FindImage("机组.bmp", 410, 580, 702, 628, 0.96)
+    If FindImage("5星.bmp", 530, 552, 773, 637, 0.92) And FindImage("机组.bmp", 410, 580, 702, 628, 0.96) Then
         KeyDown "Ctrl", 1
         KeyDown "Alt", 1
         KeyDown "3", 1
@@ -609,21 +608,64 @@ Function NavigateToBoss()
     LoopWithBattle "Step18", True
     // 第19步：往下 d2
     LoopWithBattle "Step19", True
-    // 第20步：诱敌位置（不需要战斗）
+    // 第20步：诱敌位置
     LoopWithBattle "Step20", True
     
-    // 第21步：发现了（不需要战斗）
-    LoopWithBattle "Step21", False
-    
-    // 5星判断
-    Check5Star 
-    
-    ReleaseAllKeys
+    Do
+        If FindImage("3_boss_over.bmp", 621, 419, 665, 435, 1) Then
+            ReleaseAllKeys
+            Press "h", 1, 100
+            Press "K", 2, 100
+            Press "S", 1, 100
+            Press "K", 1, 100
+            Press "W", 1, 100
+            Press "K", 3, 100
+            Press "J", 5, 100
+        End If
+
+        If FindImage("厄普.bmp", 178, 114, 788, 531, 1) Then 
+            FightBoss
+        Else
+            If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+                EscapeBattle
+            End If
+        End If
+
+        If FindImage("红牛获得.bmp", 212, 578, 380, 626, 1) Then 
+            Delay 200
+            If FindImage("红牛获得.bmp", 212, 578, 380, 626, 1) Then 
+                Press "J", 1, 100
+            End If
+        End If
+
+        If FindImage("发现了.bmp", 216, 584, 322, 625, 1) Then
+            reload = 0
+            // 5星判断
+            Check5Star
+
+            If FindImage("加特林.bmp", 338, 583, 574, 630, 1)
+                Press "K", 4, 200
+            End If
+
+            ReleaseAllKeys
+
+            Exit Function
+        End If
+    Loop
 End Function
 
 // 刷新游戏并导航到目标位置
 Function StartNewRun()
     ReleaseAllKeys
+
+    KeyDown "Ctrl", 1
+    KeyDown "Alt", 1
+    KeyDown "1", 1
+    Delay 100
+    KeyUp "Ctrl", 1
+    KeyUp "Alt", 1
+    KeyUp "1", 1
+
 	Press "J", 3, 200
 	//		刷新
 	Press "F5", 1, 10

@@ -205,6 +205,12 @@ Function DoStoreItems()
 	Press "K", 2, 200
 	Press "S", 2, 118
 	Press "K", 1, 116
+	
+	If FindImage("战车仓库4有.bmp", 228, 264, 277, 288, 1) Then
+		Press "S", 1, 100
+		Press "K", 1, 100
+	End If
+	
 	Press "N", 1, 448
 	Press "K", 2, 200
 	Press "J", 2, 200
