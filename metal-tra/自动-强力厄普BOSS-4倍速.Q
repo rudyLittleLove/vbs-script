@@ -3,14 +3,6 @@ Const IMAGE_PATH = "D:\workspace\vbs-script\images\"
 Const DELAY_SHORT = 10
 Const DELAY_NORMAL = 20
 
-// 寻路卡死检测阈值（约300ms未找到地标则重置）
-Const STUCK_THRESHOLD = 30
-
-
-// 重新加载
-Dim reload, currDown
-reload = 0
-
 // 单步超时检测（毫秒）
 Const STEP_TIMEOUT = 10000
 
@@ -115,7 +107,6 @@ End Function
 
 
 Function ReleaseAllKeys()
-	reload = 0
 	KeyUp "A", 1
 	KeyUp "S", 1
 	KeyUp "D", 1
@@ -153,6 +144,8 @@ End Function
 Function FightBoss()
 	Press "J", 1, 100
     TracePrint "开始战斗"
+    Dim athCount
+    athCount = 0
     Do
         // 如果已经在大地图了，说明逃跑成功
         If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
@@ -168,13 +161,18 @@ Function FightBoss()
         
         // 在攻击菜单界面 → 执行逃跑指令
         If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+            athCount = athCount + 1
             TracePrint "开始攻击"   
             // 一号攻击
             Press "D", 2, 100
             Press "K", 1, 100
-            Press "S", 1, 100
+            If athCount < 7 Then
+                Press "S", 1, 100
+            End If
             Press "K", 1, 100
-            Press "D", 1, 100
+            If athCount < 5 Then
+                Press "D", 1, 100
+            End If
             Press "K", 2, 100
             // 二号攻击
             Press "K", 2, 100
@@ -204,14 +202,10 @@ Function LoopWithBattle(stepName, needBattle)
         //startTime = Plugin.GetSysInfo.GetTime
         
         // 检测单步超时
-        If Plugin.GetSysInfo.GetTime - stepStartTime > STEP_TIMEOUT Then
-            reload = reload + 1
-            If reload > STUCK_THRESHOLD Then
-                reload = 0
-                StartNewRun
-            End If
-            LoopWithBattle = False
-            Exit Function
+        Dim timeLength
+        timeLength = Plugin.GetSysInfo.GetTime - stepStartTime
+        If timeLength > STEP_TIMEOUT Then
+            StartNewRun
         End If
         
         result = False
@@ -261,7 +255,6 @@ Function LoopWithBattle(stepName, needBattle)
         End Select
         
         If result Then
-            reload = 0
             LoopWithBattle = True
             Exit Function
         End If
@@ -286,6 +279,7 @@ End Function
 
 // 步骤2：上左拐角
 Function Step2_UpperLeft()
+    //If FindImage("3_boss_u_l2.bmp", 760, 349, 811, 380, 0.9) Then
     If FindImage("3_boss_u_l.bmp", 604, 364, 624, 394, 1) Then
         ReleaseAllKeys
         PressHold "W", 25
@@ -385,6 +379,11 @@ End Function
 // 步骤9：往下 d2
 Function Step9_Down2()
     KeyDown "D", 1
+    If FindImage("3_boss_d_r.bmp", 660, 380, 683, 417, 1) Then
+        ReleaseAllKeys
+        PressHold "S", 25
+        KeyDown "D", 1
+    End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
@@ -486,8 +485,15 @@ End Function
 // 步骤17：往下 d1
 Function Step17_Down1()
     KeyDown "D", 1
-    If FindImage("3_boss_d_r.bmp", 643, 376, 687, 440, 1) Then
-        Press "D", 1, 100
+    If FindImage("3_boos_d_r.bmp", 643, 376, 687, 440, 1) Then
+        ReleaseAllKeys
+        PressHold "S", 25
+        KeyDown "D", 1
+    End If
+    If FindImage("3_boos_u_r.bmp", 619, 375, 667, 405, 0.95) Then
+        ReleaseAllKeys
+        PressHold "w", 25
+        KeyDown "D", 1
     End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
@@ -536,7 +542,6 @@ End Function
 // 步骤21：发现了
 Function Step21_Found()
     If FindImage("发现了.bmp", 216, 584, 322, 625, 1) Then
-        reload = 0
         Step21_Found = True
         Exit Function
     End If
@@ -546,8 +551,12 @@ End Function
 // ==================== 5星判断 ====================
 Function Check5Star()
     // 410, 580, 702, 628 盖亚机组坐标
+    // FindImage("惊雷.bmp", 343, 584, 422, 625, 0.96)
     // FindImage("机组.bmp", 410, 580, 702, 628, 0.96)
-    If FindImage("5星.bmp", 530, 552, 773, 637, 0.92) And FindImage("机组.bmp", 410, 580, 702, 628, 0.96) Then
+    // FindImage("猛犸.bmp", 344, 585, 419, 623, 0.96)
+    //If FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("机组.bmp", 410, 580, 702, 628, 0.96) Then
+    If FindImage("机组.bmp", 450, 580, 702, 628, 0.96) Then
+        KeyPress 175, 20
         KeyDown "Ctrl", 1
         KeyDown "Alt", 1
         KeyDown "3", 1
@@ -555,6 +564,7 @@ Function Check5Star()
         KeyUp "Ctrl", 1
         KeyUp "Alt", 1
         KeyUp "3", 1
+        KeyPress 174, 22
         KeyPress "F12", 1
         Check5Star = True
         Exit Function
@@ -611,6 +621,8 @@ Function NavigateToBoss()
     // 第20步：诱敌位置
     LoopWithBattle "Step20", True
     
+    ReleaseAllKeys
+
     Do
         If FindImage("3_boss_over.bmp", 621, 419, 665, 435, 1) Then
             ReleaseAllKeys
@@ -639,7 +651,6 @@ Function NavigateToBoss()
         End If
 
         If FindImage("发现了.bmp", 216, 584, 322, 625, 1) Then
-            reload = 0
             // 5星判断
             Check5Star
 
@@ -648,7 +659,7 @@ Function NavigateToBoss()
             End If
 
             ReleaseAllKeys
-
+            StartNewRun
             Exit Function
         End If
     Loop
@@ -657,21 +668,33 @@ End Function
 // 刷新游戏并导航到目标位置
 Function StartNewRun()
     ReleaseAllKeys
-
-    KeyDown "Ctrl", 1
-    KeyDown "Alt", 1
-    KeyDown "1", 1
-    Delay 100
-    KeyUp "Ctrl", 1
-    KeyUp "Alt", 1
-    KeyUp "1", 1
+//
+//    KeyDown "Ctrl", 1
+//    KeyDown "Alt", 1
+//    KeyDown "1", 1
+//    Delay 100
+//    KeyUp "Ctrl", 1
+//    KeyUp "Alt", 1
+//    KeyUp "1", 1
 
 	Press "J", 3, 200
 	//		刷新
 	Press "F5", 1, 10
 	Press "F5", 1, 400
-	Press "J", 3, 200
-	Press "S", 1, 100
+	Press "J", 2, 200
+    Dim count1
+    count1 = 0
+    Do
+        count1 = count1 + 1
+        If count1 > 10 Then
+            StartNewRun
+        End If
+        If FindImage("指账号.bmp", 381, 299, 442, 331, 1) Then
+            Exit Do
+        End If
+        Delay 500
+    Loop
+    Press "S", 1, 100
 	Press "K", 1, 100
 	Press "S", 1, 100
 	Press "K", 6, 50
@@ -679,8 +702,18 @@ Function StartNewRun()
 	Press "S", 1, 100
 	Press "K", 1, 100
 	Delay 1000
-	Press "K", 2, 200
-	Delay 1200
+	Press "K", 3, 200
+    count1 = 0
+	Do
+        count1 = count1 + 1
+        If count1 > 10 Then
+            StartNewRun
+        End If
+        If FindImage("指开始游戏.bmp", 290, 672, 442, 716, 1) Then
+            Exit Do
+        End If
+        Delay 500
+    Loop
 	Press "K", 2, 200
 	Delay 300
 	
