@@ -555,7 +555,8 @@ Function Check5Star()
     // FindImage("机组.bmp", 410, 580, 702, 628, 0.96)
     // FindImage("猛犸.bmp", 344, 585, 419, 623, 0.96)
     //If FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("机组.bmp", 410, 580, 702, 628, 0.96) Then
-    If FindImage("机组.bmp", 450, 580, 702, 628, 0.96) Then
+    //If FindImage("机组.bmp", 450, 580, 702, 628, 0.96) And FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("5星.bmp", 530, 552, 773, 637, 0.92) Then
+    If FindImage("惊雷.bmp", 343, 584, 422, 625, 0.96) Then
         KeyPress 175, 20
         KeyDown "Ctrl", 1
         KeyDown "Alt", 1
