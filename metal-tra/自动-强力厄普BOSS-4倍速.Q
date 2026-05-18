@@ -384,6 +384,11 @@ Function Step9_Down2()
         PressHold "S", 25
         KeyDown "D", 1
     End If
+    If FindImage("3_boos_u_r.bmp", 619, 375, 667, 405, 0.95) Then
+        ReleaseAllKeys
+        PressHold "w", 25
+        KeyDown "D", 1
+    End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
         ReleaseAllKeys
         KeyDown "S", 1
