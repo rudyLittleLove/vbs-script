@@ -1,10 +1,17 @@
 // ==================== 常量配置 ====================
 Const IMAGE_PATH = "D:\workspace\vbs-script\images\"
+Const JIETU_PATH = "D:\workspace\vbs-script\截图\"
 Const DELAY_SHORT = 10
 Const DELAY_NORMAL = 20
 
 // 单步超时检测（毫秒）
 Const STEP_TIMEOUT = 10000
+// 整体耗时
+Dim totalTime
+totalTime = 0
+
+Dim runCount
+runCount = 0
 
 // 记录当前步骤开始时间
 Dim stepStartTime
@@ -269,8 +276,14 @@ End Function
 Function Step1_SavePoint()
     If FindImage("3_boss_d_l.bmp", 633, 325, 649, 339, 1) Then
         ReleaseAllKeys
-        PressHold "S", 25
-        KeyDown "A", 1
+        PressHold "S", 60
+		PressHold "A", 650
+		PressHold "W", 50
+		PressHold "A", 340
+        Delay 100
+		PressHold "W", 30
+        Delay 100
+		PressHold "A", 50
         Step1_SavePoint = True
         Exit Function
     End If
@@ -296,8 +309,10 @@ Function Step3_Floor1Cn()
         ReleaseAllKeys
         PressHold "D", 35
         PressHold "W", 130
-        PressHold "D", 280
-        PressHold "S", 25
+        PressHold "D", 260
+		Delay 100
+        PressHold "S", 30
+        Delay 100
         PressHold "A", 50
         Step3_Floor1Cn = True
         Exit Function
@@ -310,8 +325,9 @@ Function Step4_Floor1Sym()
     If FindImage("3_boss_-1楼.bmp", 645, 360, 669, 424, 1) Then
         ReleaseAllKeys
         PressHold "D", 40
-        PressHold "W", 75
-        PressHold "A", 190
+        PressHold "W", 65
+        Delay 100
+        PressHold "A", 210
         Step4_Floor1Sym = True
         Exit Function
     End If
@@ -325,13 +341,20 @@ Function Step5_Floor3()
         PressHold "S", 140
         PressHold "A", 140
         PressHold "S", 140
-        PressHold "A", 75
-        PressHold "W", 400
-        PressHold "A", 50
-        PressHold "W", 400
-        PressHold "A", 120
-        PressHold "W", 60
+		Delay 20
         PressHold "A", 70
+		Delay 30
+        PressHold "W", 360
+		Delay 20
+        PressHold "A", 35
+        PressHold "W", 330
+		Delay 20
+        PressHold "A", 100
+		Delay 20
+        PressHold "W", 40
+		Delay 50
+        PressHold "A", 65
+		Delay 50
         KeyDown "S", 1
         Step5_Floor3 = True
         Exit Function
@@ -384,9 +407,14 @@ Function Step9_Down2()
         PressHold "S", 25
         KeyDown "D", 1
     End If
-    If FindImage("3_boos_u_r.bmp", 619, 375, 667, 405, 0.95) Then
+    If FindImage("3_boss_u_r.bmp", 619, 375, 667, 405, 0.95) Then
         ReleaseAllKeys
-        PressHold "w", 25
+        PressHold "W", 25
+        KeyDown "D", 1
+    End If
+    If FindImage("3_boss_u_r3.bmp", 645, 367, 678, 419, 0.95) Then
+        ReleaseAllKeys
+        PressHold "W", 25
         KeyDown "D", 1
     End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
@@ -451,7 +479,9 @@ Function Step14_DownLeft2()
     KeyDown "W", 1
     If FindImage("3_boos_d_l.bmp", 597, 376, 679, 398, 1) Then
         ReleaseAllKeys
+		Delay 100
         PressHold "S", 25
+        Delay 100
         KeyDown "A", 1
         Step14_DownLeft2 = True
         Exit Function
@@ -478,7 +508,7 @@ Function Step16_Right3()
     KeyDown "S", 1
     //If FindImgWithDelay("3_boss_r3.bmp", 264, 468, 298, 700, 0.95, "S", 468) Then
     //If FindImage("3_boss_r3.bmp", 264, 468, 298, 547, 0.95) Then
-    If FindImage("3_boss_r3.bmp", 264, 468, 298, 557, 0.95) Then
+    If FindImage("3_boss_r3.bmp", 264, 468, 398, 557, 0.95) Then
         ReleaseAllKeys
         KeyDown "D", 1
         Step16_Right3 = True
@@ -495,9 +525,9 @@ Function Step17_Down1()
         PressHold "S", 25
         KeyDown "D", 1
     End If
-    If FindImage("3_boos_u_r.bmp", 619, 375, 667, 405, 0.95) Then
+    If FindImage("3_boss_u_r.bmp", 619, 375, 667, 405, 0.95) Or FindImage("3_boss_u_r2.bmp", 651, 370, 676, 422, 0.98) Then
         ReleaseAllKeys
-        PressHold "w", 25
+        PressHold "W", 25
         KeyDown "D", 1
     End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
@@ -561,8 +591,25 @@ Function Check5Star()
     // FindImage("猛犸.bmp", 344, 585, 419, 623, 0.96)
     //If FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("机组.bmp", 410, 580, 702, 628, 0.96) Then
     //If FindImage("机组.bmp", 450, 580, 702, 628, 0.96) And FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("5星.bmp", 530, 552, 773, 637, 0.92) Then
-    If FindImage("惊雷.bmp", 343, 584, 422, 625, 0.96) Then
-        KeyPress 175, 20
+//    If (FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) Or FindImage("碎星.bmp", 330, 550, 450, 650, 0.96) Or FindImage("5星.bmp", 570, 552, 773, 637, 0.92)) And FindImage("机组.bmp", 450, 580, 702, 628, 0.96) Then
+    runCount = runCount + 1
+    Dim takeTime
+    takeTime = (Plugin.GetSysInfo.GetTime - totalTime) / 1000
+    TracePrint "整体耗时" & (takeTime) & "s"
+    Call Plugin.Pic.PrintScreen(343, 584, 773, 626, JIETU_PATH & runCount & "_" & takeTime & ".bmp")
+	//If FindImage("碎星.bmp", 330, 550, 450, 650, 0.96) And FindImage("5星.bmp", 570, 552, 773, 637, 0.92) And FindImage("机组.bmp", 450, 580, 702, 628, 0.96)  Then
+    If FindImage("5星.bmp", 570, 552, 773, 637, 0.92) Or FindImage("机组.bmp", 450, 580, 702, 628, 0.96)  Then
+        //KeyPress 175, 20
+        KeyDown "Ctrl", 1
+        KeyDown "Alt", 1
+        KeyDown "2", 1
+        Delay 300
+        KeyUp "Ctrl", 1
+        KeyUp "Alt", 1
+        KeyUp "2", 1
+
+        Delay (Plugin.GetSysInfo.GetTime - totalTime) * 3
+
         KeyDown "Ctrl", 1
         KeyDown "Alt", 1
         KeyDown "3", 1
@@ -570,7 +617,8 @@ Function Check5Star()
         KeyUp "Ctrl", 1
         KeyUp "Alt", 1
         KeyUp "3", 1
-        KeyPress 174, 22
+        //Delay 1000
+        //KeyPress 174, 22
         KeyPress "F12", 1
         Check5Star = True
         Exit Function
@@ -584,7 +632,7 @@ Function NavigateToBoss()
     LoopWithBattle "Step1", False
     
     // 第2步：上左拐角
-    LoopWithBattle "Step2", False
+    //LoopWithBattle "Step2", False
     
     // 第3步：负1楼（中文）
     LoopWithBattle "Step3", False
@@ -644,6 +692,7 @@ Function NavigateToBoss()
         If FindImage("厄普.bmp", 178, 114, 788, 531, 1) Then 
             FightBoss
         Else
+			KeyPress "J", 1
             If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
                 EscapeBattle
             End If
@@ -672,8 +721,20 @@ Function NavigateToBoss()
 End Function
 
 // 刷新游戏并导航到目标位置
+Dim allRestar
+allRestar = 0
 Function StartNewRun()
     ReleaseAllKeys
+    allRestar = allRestar + 1
+    If allRestar > 5 Then
+        allRestar = 0
+        Press "J", 4, 100
+        Press "R", 1, 100
+        Press "K", 1, 100
+        Delay 10000
+        StartNewRun
+        Exit Function
+    End If
 //
 //    KeyDown "Ctrl", 1
 //    KeyDown "Alt", 1
@@ -682,8 +743,14 @@ Function StartNewRun()
 //    KeyUp "Ctrl", 1
 //    KeyUp "Alt", 1
 //    KeyUp "1", 1
+    // 在攻击菜单界面 → 执行逃跑指令
+    If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+        EscapeBattle
+    End If
+
 
 	Press "J", 3, 200
+
 	//		刷新
 	Press "F5", 1, 10
 	Press "F5", 1, 400
@@ -707,6 +774,7 @@ Function StartNewRun()
 	Press "N", 1, 100
 	Press "S", 1, 100
 	Press "K", 1, 100
+	totalTime = Plugin.GetSysInfo.GetTime 
 	Delay 1000
 	Press "K", 3, 200
     count1 = 0
@@ -723,6 +791,7 @@ Function StartNewRun()
 	Press "K", 2, 200
 	Delay 300
 	
+    allRestar = 0
 	//    移动
     NavigateToBoss	
 End Function
