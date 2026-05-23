@@ -409,12 +409,14 @@ Function Step9_Down2()
     End If
     If FindImage("3_boss_u_r.bmp", 619, 375, 667, 405, 0.95) Then
         ReleaseAllKeys
-        PressHold "W", 25
+        PressHold "W", 15
+        Delay 20
         KeyDown "D", 1
     End If
     If FindImage("3_boss_u_r3.bmp", 645, 367, 678, 419, 0.95) Then
         ReleaseAllKeys
-        PressHold "W", 25
+        PressHold "W", 15
+        Delay 20
         KeyDown "D", 1
     End If
     If FindImage("3_boss_d2.bmp", 649, 356, 671, 391, 1) Then
@@ -589,6 +591,7 @@ Function Check5Star()
     // FindImage("惊雷.bmp", 343, 584, 422, 625, 0.96)
     // FindImage("机组.bmp", 410, 580, 702, 628, 0.96)
     // FindImage("猛犸.bmp", 344, 585, 419, 623, 0.96)
+    // FindImage("盖亚.bmp", 354, 585, 522, 625, 0.96)
     //If FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("机组.bmp", 410, 580, 702, 628, 0.96) Then
     //If FindImage("机组.bmp", 450, 580, 702, 628, 0.96) And FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) And FindImage("5星.bmp", 530, 552, 773, 637, 0.92) Then
 //    If (FindImage("惊雷.bmp", 343, 584, 423, 626, 0.96) Or FindImage("碎星.bmp", 330, 550, 450, 650, 0.96) Or FindImage("5星.bmp", 570, 552, 773, 637, 0.92)) And FindImage("机组.bmp", 450, 580, 702, 628, 0.96) Then
@@ -598,17 +601,17 @@ Function Check5Star()
     TracePrint "整体耗时" & (takeTime) & "s"
     Call Plugin.Pic.PrintScreen(343, 584, 773, 626, JIETU_PATH & runCount & "_" & takeTime & ".bmp")
 	//If FindImage("碎星.bmp", 330, 550, 450, 650, 0.96) And FindImage("5星.bmp", 570, 552, 773, 637, 0.92) And FindImage("机组.bmp", 450, 580, 702, 628, 0.96)  Then
-    If FindImage("5星.bmp", 570, 552, 773, 637, 0.92) Or FindImage("机组.bmp", 450, 580, 702, 628, 0.96)  Then
-        //KeyPress 175, 20
-        KeyDown "Ctrl", 1
-        KeyDown "Alt", 1
-        KeyDown "2", 1
-        Delay 300
-        KeyUp "Ctrl", 1
-        KeyUp "Alt", 1
-        KeyUp "2", 1
+    If FindImage("盖亚.bmp", 354, 585, 572, 626, 0.96) Then
+        KeyPress 175, 20
+        //KeyDown "Ctrl", 1
+        //KeyDown "Alt", 1
+       // KeyDown "2", 1
+       // Delay 300
+       // KeyUp "Ctrl", 1
+      //  KeyUp "Alt", 1
+      //  KeyUp "2", 1
 
-        Delay (Plugin.GetSysInfo.GetTime - totalTime) * 3
+     //   Delay (Plugin.GetSysInfo.GetTime - totalTime) * 3
 
         KeyDown "Ctrl", 1
         KeyDown "Alt", 1
@@ -617,8 +620,8 @@ Function Check5Star()
         KeyUp "Ctrl", 1
         KeyUp "Alt", 1
         KeyUp "3", 1
-        //Delay 1000
-        //KeyPress 174, 22
+        Delay 1000
+        KeyPress 174, 22
         KeyPress "F12", 1
         Check5Star = True
         Exit Function
