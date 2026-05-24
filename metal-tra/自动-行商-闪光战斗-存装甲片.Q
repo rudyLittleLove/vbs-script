@@ -383,7 +383,7 @@ Function HandleMenuScene()
     // If FindAndPress("诱敌.bmp", 227, 214, 451, 260, 0.95, "K", DELAY_NORMAL) Then Exit Function
     // If FindAndPress("去寻找怪.bmp", 400, 500, 760, 600, 0.95, "K", DELAY_NORMAL) Then Exit Function
     // 检测到特技指向（此页面可同时查看装甲量和血量，故在此统一判断状态）
-    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
+    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) Then
         // 检测无装甲
         If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
             needRepair = True

@@ -17,7 +17,10 @@ has45 = False
 Dim saveNum
 saveNum = 0
 
-// 是否已执行首回合防御（巡逻蜂出现后防御一次，第二回合开始识别闪光）
+Dim longStop
+longStop = 0
+
+// 是否已执行首回合防御（进入战斗后防御一次，第二回合开始识别闪光）
 Dim hasDefended
 hasDefended = False
 
@@ -26,6 +29,7 @@ hasDefended = False
 
 // 在指定区域找图，找到则按键并返回 true
 Function FindAndPress(imgName, x1, y1, x2, y2, similarity, key, delayMs)
+	longStop = 0
     Dim intX, intY
     FindPic x1, y1, x2, y2, IMAGE_PATH & imgName, similarity, intX, intY
     If intX > 0 Then
@@ -45,7 +49,9 @@ Function FindImage(imgName, x1, y1, x2, y2, similarity)
 End Function
 
 // 点击按键count次，每次延迟delayMs
+// 用法: Press "K", 3, 100  -> 按3次K，每次延迟100ms
 Function Press(key, count, delayMs)
+	longStop = 0
     Dim i
     If count < 1 Then count = 1
     If delayMs < 0 Then delayMs = 0
@@ -64,6 +70,7 @@ Function PressHold(key, holdMs)
 End Function
 
 // 检测是否在大地图（有大地图标志且没有菜单钉）
+// 返回 True=是大地图, False=不是
 Function IsWorldMap()
     If Not FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
         IsWorldMap = False
@@ -84,7 +91,7 @@ End Function
 Function WaitForTeleport()
     Dim i
     For i = 1 To 30
-        If IsWorldMap() Then
+        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
             Exit Function
         End If
         Delay 1000
@@ -125,15 +132,19 @@ End Function
 // 战斗中逃跑并等待回到大地图
 Function EscapeBattle()
     Press "J", 1, 100
-    Press "A", 1, 100
-    Press "K", 1, 100
-    Press "A", 1, 100
-    Press "K", 1, 100
     Do
         If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
             Exit Do
         End If
-        Delay 500
+        
+        // 在攻击菜单界面 → 执行逃跑指令
+        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then 
+            Press "A", 1, 100
+            Press "K", 1, 200
+            Press "A", 1, 100
+            Press "K", 1, 2000
+        End If
+        Delay 300
     Loop
 End Function
 
@@ -169,6 +180,7 @@ Function DoRepairArmor()
 End Function
 
 // 存物流程：回城 -> 拆卸装甲片 -> 存45mm炮 -> 补装甲
+// 触发条件：掉落45mm炮后大地图执行
 Function DoStoreItems()
     // 1. 取消
     KeyPress "J", 3
@@ -197,6 +209,12 @@ Function DoStoreItems()
 	Press "K", 2, 200
 	Press "S", 2, 118
 	Press "K", 1, 116
+	
+	If FindImage("战车仓库4有.bmp", 228, 264, 277, 288, 1) Then
+		Press "S", 1, 100
+		Press "K", 1, 100
+	End If
+	
 	Press "N", 1, 448
 	Press "K", 2, 200
 	Press "J", 2, 200
@@ -251,7 +269,8 @@ Function DoBait()
     Press "S", 1, 100
     Press "K", 1, 100
     Press "W", 3, 100
-    Press "K", 2, 350
+    Press "K", 2, 200
+    Press "K", 1, 350
     Press "K", 1, 800
 End Function
 
@@ -276,8 +295,8 @@ Function HandleBattleScene()
         Exit Function
     End If
 
-    // 首回合：巡逻蜂出现 → 防御，等待召唤河马
-    If FindImage("巡逻蜂出现.bmp", 217, 586, 455, 597, 0.98) Then
+    // 首回合：攻击菜单 → 防御，等待河马被召唤
+    If Not hasDefended And FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then
         Press "J", 2, 100
         Press "A", 2, 100
         Press "K", 2, 100
@@ -375,6 +394,16 @@ Function HandleMenuScene()
         Exit Function
     End If
 
+    // 怪物出现了（确认进入战斗）
+    If FindImage("巡逻蜂出现.bmp", 217, 586, 456, 598, 0.95) Then
+        Press "J", 2, 100
+        Press "A", 2, 100
+        Press "K", 2, 100
+        Press "A", 2, 100
+        Press "K", 2, 100
+        Exit Function
+    End If
+
     // 取消类
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
@@ -382,13 +411,15 @@ End Function
 
 // 处理战斗结算场景（战斗结束后的掉落/经验结算界面）
 Function HandleBattleSettlement()
+	Delay 200
     // 45mm炮掉落处理
-    If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) And FindImage("45mm列鹿.bmp", 763, 356, 915, 395, 0.95) Then 
+    If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) Then 
         Press "K", 2, 200
         Press "J", 2, 200
         has45 = True
         Exit Function
     End If
+    
     // 结算界面通用确认/取消处理
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
     If FindAndPress("仓满.bmp", 315, 580, 508, 635, 0.95, "J", DELAY_NORMAL) Then Exit Function
@@ -397,12 +428,19 @@ Function HandleBattleSettlement()
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("放入.bmp", 321, 593, 385, 628, 0.95, "J", DELAY_NORMAL) Then Exit Function
     If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
 End Function
 
 // ==================== 主逻辑 ====================
 
 // 主循环逻辑：每5ms执行一次，先检测场景，再分发到对应处理函数
 Function MainLoop()
+	longStop = longStop + 1
+	
+	If longStop > 100 Then 
+		Press "J", 2, 100
+	End If
+	
     Dim scene
     scene = DetectScene()
 

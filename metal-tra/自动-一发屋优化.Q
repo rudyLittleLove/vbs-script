@@ -9,10 +9,18 @@ Const DELAY_NORMAL = 20
 Dim needRepair
 needRepair = False
 
+// 是否存档
+Dim saveNum
+saveNum = 0
+
+Dim longStop
+longStop = 0
+
 // ==================== 辅助函数 ====================
 
 // 在指定区域找图，找到则按键并返回 true
 Function FindAndPress(imgName, x1, y1, x2, y2, similarity, key, delayMs)
+	longStop = 0
     Dim intX, intY
     FindPic x1, y1, x2, y2, IMAGE_PATH & imgName, similarity, intX, intY
     If intX > 0 Then
@@ -33,6 +41,7 @@ End Function
 
 // 点击按键count次，每次延迟delayMs
 Function Press(key, count, delayMs)
+	longStop = 0
     Dim i
     If count < 1 Then count = 1
     If delayMs < 0 Then delayMs = 0
@@ -58,12 +67,12 @@ Function IsWorldMap()
         Exit Function
     End If
     Dim i
-    For i = 1 To 10
+    For i = 1 To 2
         If FindImage("菜单钉.bmp", 256, 506, 275, 524, 1) Then
             IsWorldMap = False
             Exit Function
         End If
-        Delay 20
+        Delay 100
     Next
     IsWorldMap = True
 End Function
@@ -72,121 +81,93 @@ End Function
 Function WaitForTeleport()
     Dim i
     For i = 1 To 30
-        If IsWorldMap() Then
+        If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
             Exit Function
         End If
         Delay 1000
     Next
 End Function
 
-// ==================== 补血 ====================
+// 存档流程：传送到城镇 -> 走到存档点 -> 执行存档 -> 重置存档计数
+Function DoSaveGame()
+    // 1. 取消
+    KeyPress "J", 3
+    Delay 300
+    
+	Press "R", 1, 137
+	Press "D", 2, 100
+	Press "K", 1, 1000
+	
+	WaitForTeleport
 
-Function DoHeal()
-    KeyPress "A", 1
-    KeyPress "W", 1
-    Press "K", 1, 100
-    Press "S", 1, 100
-    Press "K", 1, 100
-    Press "S", 1, 100
-    Press "K", 4, 100
-    Press "K", 3, 300
-    Press "J", 4, 50
+	// 2. 进入城镇
+	Press "W", 1, 1500
+	PressHold "D", 100
+	PressHold "S", 1000
+	PressHold "D", 1150
+	PressHold "S", 700
+	PressHold "D", 1063
+	PressHold "W", 395
+	Delay 969
+	PressHold "W", 220
+	PressHold "D", 2700
+	PressHold "W", 700
+	Press "K", 14, 500
+	Press "J", 5, 100
+	saveNum = 0
 End Function
 
 // ==================== 补装甲流程 ====================
 
+// 补装甲流程：传送回城 -> 走到修理店 -> 购买装甲片 -> 存档检查 -> 返回刷怪点
 Function DoRepairArmor()
+    saveNum = saveNum + 1
     // 1. 取消
     KeyPress "J", 3
     Delay 300
 
     Press "R", 1, 300
-    Press "D", 2, 100
-    Press "K", 1, 8000
+    Press "S", 1, 100
+    Press "K", 1, 1000
 
-    If needRepair Then
-    	Press "E", 1, 100
-    	Press "K", 1, 200
+    WaitForTeleport
+
+    PressHold "W", 100
+    Delay 1300
+    PressHold "W", 800
+    PressHold "A", 300
+    Delay 500
+    PressHold "A", 700
+    Delay 100
+    Press "W", 1, 200
+    Press "K", 3, 500
+    Press "J", 3, 400
+
+    If saveNum >= 10 Then
+        DoSaveGame
     End If
 
-    // 2. 进入城镇
-    Press "W", 1, 1500
-    // 3. 按键进入装甲片商铺
-    PressHold "D", 100
-    PressHold "S", 800
-    PressHold "D", 800
-    PressHold "W", 600
-    Delay 800
-    Press "K", 2, 500
+    ReturnToFarmSpot
+End Function
 
-    If needRepair Then
-        PressHold "W", 1400
-    Else
-        PressHold "W", 800
-    End If
-    Delay 300
-    Press "D", 1, 200
-
-    If needRepair Then
-    	Press "K", 1, 300
-    	Press "S", 1, 300
-    	Press "K", 3, 300
-    	Press "J", 3, 300
-    	Press "E", 1, 300
-    	Press "K", 1, 300
-    	PressHold "S", 500
-    	Delay 300
-    	Press "D", 1, 100
-    End If
-
-    // 对话加装甲
-    Press "K", 1, 300
-    Press "K", 2, 500
-    Press "J", 4, 500
-
-    // 重新进入一发屋地道
-    PressHold "S", 1060
-    Delay 934
-    PressHold "S", 582
-    PressHold "D", 382
-    PressHold "S", 616
-    PressHold "D", 1063
-    PressHold "W", 395
-    Delay 969
-    PressHold "W", 614
-    PressHold "A", 1060
-    Delay 115
-    PressHold "W", 118
-    PressHold "A", 500
-    Delay 1115
-    PressHold "D", 167
-    PressHold "W", 583
-    PressHold "D", 1060
-    PressHold "S", 150
-    PressHold "A", 297
-    Delay 982
-    PressHold "D", 168
-    PressHold "W", 274
-    PressHold "A", 1060
-    Delay 1250
-    PressHold "A", 366
-    PressHold "S", 568
-    PressHold "A", 265
-    PressHold "S", 400
-    PressHold "A", 500
-    PressHold "W", 600
-    PressHold "A", 450
-    PressHold "W", 600
-    PressHold "A", 546
-    PressHold "W", 300
-    PressHold "A", 600
+// 返回刷怪起点：传送到四镇 -> 走到一发屋刷新点（与河马相同，不进入地道）
+Function ReturnToFarmSpot()
+	// 传送回四镇
+    Press "R", 1, 300
+    Press "S", 1, 100
+    Press "K", 1, 1000
+    WaitForTeleport
+    // 走到一发屋刷新点
+    PressHold "S", 1500
+	PressHold "A", 940
 End Function
 
 // ==================== 逃跑流程 ====================
-
-// 战斗中逃跑并等待回到大地图
 Function EscapeBattle()
     Press "J", 1, 100
+    If FindImage("炮弹0.bmp", 695, 430, 763, 480, 1) Or FindImage("弹药0.bmp", 213, 585, 355, 626, 0.95) Then
+        needRepair = True
+    End If
     Do
         // 逃跑成功：检测到大地图标志即可（不需要检查菜单钉，逃跑后菜单通常是关闭的）
         If FindImage("大地图.bmp", 561, 45, 599, 51, 1) Then
@@ -209,11 +190,14 @@ Function EscapeBattle()
     Loop
 End Function
 
+// ==================== 武器切换 ====================
+// 本版本固定使用主炮，不切换武器
+
 // 检测闪光（进入战斗时的闪光特效）
 Function DetectFlash()
     Dim flashImg
     For Each flashImg In Array("闪光1.bmp", "闪光2.bmp", "闪光3.bmp", "闪光4.bmp", "闪光5.bmp", "闪光6.bmp", "闪光7.bmp", "闪光8.bmp", "闪光9.bmp", "闪光10.bmp")
-        If FindImage(flashImg, 148, 131, 616, 425, 0.9) Then
+        If FindImage(flashImg, 159, 40, 560, 496, 0.9) Then
             DetectFlash = True
             Exit Function
         End If
@@ -249,7 +233,7 @@ End Function
 
 // ==================== 诱敌流程 ====================
 
-// 执行诱敌并检测闪光，有闪光切主炮，无闪光切副炮
+// 执行诱敌并检测闪光，有闪光则战斗，无闪光则逃跑
 Function DoBait()
     // 诱敌菜单导航（K→S→K→W→W→K→K）
     Press "K", 2, 100
@@ -260,46 +244,23 @@ Function DoBait()
     Press "K", 1, 350
     Press "K", 1, 800
 
-    // 循环检测闪光4次
-    // 检测到闪光 = 稀有敌人
-    Dim hasFlash
-    hasFlash = False
+    // 循环检测闪光N次
+    // 检测到闪光 = 稀有敌人，直接进入战斗（不逃跑）
     Dim i
     For i = 1 To 4
-        If DetectFlash() Then
-            hasFlash = True
-            Exit For
+        If DetectFlash() Then 
+            Exit Function
         End If
         Delay 50
     Next
 
-    // 按K确认进入战斗
-    Press "K", 1, 100
-
-    // 循环等待攻击菜单出现，根据闪光状态切换武器
-    Do
-        If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then
-            // 有闪光怪且当前是副炮 → 切换主炮
-            If hasFlash And FindImage("副炮.bmp", 245, 440, 305, 475, 0.9) Then
-                Press "W", 1, 100
-            End If
-            // 无闪光怪且当前是主炮 → 切换副炮
-            If Not hasFlash And FindImage("主炮.bmp", 250, 445, 305, 470, 0.9) Then
-                Press "W", 1, 100
-                Press "S", 1, 100
-            End If
-            Exit Do
-        End If
-        KeyPress "J", 1
-        Delay 100
-    Loop
-
-    // 按K开始攻击
-    Press "K", 1, 100
+    // 没检测到，逃跑
+    EscapeBattle
 End Function
 
 // 处理战斗场景
 Function HandleBattleScene()
+    // 本版本固定使用主炮，不切换武器
     // 检测主炮弹药为0 → 逃跑回城补充
     If FindImage("炮弹0.bmp", 695, 430, 763, 480, 1) Or FindImage("弹药0.bmp", 213, 585, 355, 626, 0.95) Then
         needRepair = True
@@ -326,7 +287,7 @@ End Function
 
 // 处理大地图场景
 Function HandleWorldScene()
-    // 需要回城补充（弹药0、弹药7或SP_LOW战斗结束后）
+    // 需要回城补充（弹药0或SP_LOW逃跑后）
     If needRepair Then 
     	needRepair = False
         DoRepairArmor
@@ -339,50 +300,27 @@ End Function
 
 // 处理菜单/对话场景
 Function HandleMenuScene()
-    // 确定类
-    // If FindAndPress("手指_红牛.bmp", 480, 500, 670, 610, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    // If FindAndPress("寻找怪.bmp", 280, 510, 790, 620, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    // If FindAndPress("手指_特技.bmp", 309, 584, 490, 664, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    // If FindAndPress("手指_诱敌.bmp", 200, 200, 620, 430, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    // If FindAndPress("诱敌.bmp", 227, 214, 451, 260, 0.95, "K", DELAY_NORMAL) Then Exit Function
-    // If FindAndPress("去寻找怪.bmp", 400, 500, 760, 600, 0.95, "K", DELAY_NORMAL) Then Exit Function
-
     // 检测到特技指向（此页面可同时查看装甲量和血量，故在此统一判断状态）
-    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) 
-        // 检测无装甲
-        If FindImage("无装甲.bmp", 500, 679, 633, 712, 1) Then
-            needRepair = True
-            DoRepairArmor
-            Exit Function
-        End If
-
+    If FindImage("手指_特技.bmp", 309, 584, 490, 664, 0.95) Then
         // 检测装甲少
-        If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.95) Then
+        If FindImage("装甲少.bmp", 490, 670, 600, 720, 0.97) Or FindImage("装甲少2.bmp", 658, 689, 753, 706, 0.97) Then
             DoRepairArmor
             Exit Function
         End If
-
-        // 检测血量少
-        If FindImage("血量少.bmp", 495, 700, 600, 750, 0.95) Then
-            DoHeal
-            Exit Function
-        End If
-        doBait
+        DoBait
         Exit Function
     End If
 
-    If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
-
     // 取消类
     If FindAndPress("战斗中过渡.bmp", 157, 540, 218, 563, 0.95, "J", DELAY_NORMAL) Then Exit Function
+    If FindAndPress("对话框.bmp", 1060, 717, 1087, 736, 0.98, "J", DELAY_NORMAL) Then Exit Function
 
     // 方向键导航
     If FindAndPress("乘降.bmp", 325, 554, 459, 598, 0.95, "S", DELAY_SHORT) Then Exit Function
     If FindAndPress("包裹.bmp", 180, 555, 320, 600, 0.95, "D", DELAY_SHORT) Then Exit Function
-
 End Function
 
-// 处理战斗结算场景（战斗结束后的掉落/经验结算界面）
+// 处理战斗结算场景（战利品丢弃，与行商相同）
 Function HandleBattleSettlement()
     // 结算界面通用确认/取消处理
     If FindAndPress("选是.bmp", 980, 400, 1070, 450, 0.95, "K", DELAY_NORMAL) Then Exit Function
@@ -397,6 +335,12 @@ End Function
 
 // 主循环逻辑：每5ms执行一次，先检测场景，再分发到对应处理函数
 Function MainLoop()
+	longStop = longStop + 1
+	
+	If longStop > 100 Then 
+		Press "J", 2, 100
+	End If
+	
     Dim scene
     scene = DetectScene()
 
@@ -410,51 +354,6 @@ Function MainLoop()
         Case 4
             HandleBattleSettlement
     End Select
-End Function
-
-// 统一传送回一发屋刷怪点（补装甲和入口共用）
-Function ReturnToFarmSpot()
-    // 传送回一发屋附近城镇
-    Press "R", 1, 300
-    Press "D", 2, 100
-    Press "K", 1, 1000
-    WaitForTeleport
-    // 重新进入一发屋地道
-    PressHold "S", 1060
-    Delay 934
-    PressHold "S", 582
-    PressHold "D", 382
-    PressHold "S", 616
-    PressHold "D", 1063
-    PressHold "W", 395
-    Delay 969
-    PressHold "W", 614
-    PressHold "A", 1060
-    Delay 115
-    PressHold "W", 118
-    PressHold "A", 500
-    Delay 1115
-    PressHold "D", 167
-    PressHold "W", 583
-    PressHold "D", 1060
-    PressHold "S", 150
-    PressHold "A", 297
-    Delay 982
-    PressHold "D", 168
-    PressHold "W", 274
-    PressHold "A", 1060
-    Delay 1250
-    PressHold "A", 366
-    PressHold "S", 568
-    PressHold "A", 265
-    PressHold "S", 400
-    PressHold "A", 500
-    PressHold "W", 600
-    PressHold "A", 450
-    PressHold "W", 600
-    PressHold "A", 546
-    PressHold "W", 300
-    PressHold "A", 600
 End Function
 
 // ==================== 入口 ====================

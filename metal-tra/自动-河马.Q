@@ -259,7 +259,10 @@ End Function
 
 // ==================== 诱敌流程 ====================
 
+Dim defendCount
+defendCount = 0
 Function DoBait()
+    defendCount = 0
     // 诱敌菜单导航
     Press "K", 2, 100
     Press "S", 1, 100
@@ -268,6 +271,15 @@ Function DoBait()
     Press "K", 2, 200
     Press "K", 1, 350
     Press "K", 1, 800
+End Function
+// 防御
+Function DoDefend()
+    defendCount = defendCount + 1
+    Press "J", 2, 100
+    Press "A", 2, 100
+    Press "K", 2, 100
+    Press "A", 2, 100
+    Press "K", 2, 100 
 End Function
 
 // 处理战斗场景
@@ -285,6 +297,11 @@ Function HandleBattleScene()
         EscapeBattle
         Exit Function
     End If
+    
+    // 弹药剩余7发以下：本场继续攻击，战斗结束后回城补甲（避免下场战斗弹药不足）
+    If FindImage("弹药7.bmp", 702, 429, 743, 481, 1) Then
+        needRepair = True
+    End If
 
     // 战斗中装甲少(SP_LOW) → 逃跑回城补充
     If FindImage("攻击.bmp", 212, 508, 327, 552, 1) Then
@@ -293,15 +310,19 @@ Function HandleBattleScene()
             EscapeBattle
             Exit Function
         End If
+        If Not FindImage("河马.bmp", 52, 50, 723, 469, 0.93) And Not needRepair And defendCount < 5 Then
+            DoDefend
+            Exit Function
+        End If
     End If
 
     // 主炮/副炮选择敌人
     If FindImage("主炮选敌人.bmp", 373, 518, 420, 541, 0.95) Then 
         Press "S", 2, 100
     End If
-    If FindImage("副炮选敌人.bmp", 376, 518, 417, 538, 0.95) Then 
-        Press "W", 2, 100
-    End If
+    //If FindImage("副炮选敌人.bmp", 376, 518, 417, 538, 0.95) Then 
+    //    Press "W", 2, 100
+    //End If
 
     // 普通攻击
     Press "K", 1, 20
@@ -342,11 +363,16 @@ Function HandleMenuScene()
 
     // 怪物出现了
     If FindImage("巡逻蜂出现.bmp", 217, 586, 456, 598, 0.95) Then
+        DoDefend
+        Exit Function
+    End If  
+    // 非巡逻蜂出现，逃跑
+    If FindImage("出现了.bmp", 305, 577, 600, 667, 0.95) Then
         Press "J", 2, 100
-        Press "A", 2, 100
-        Press "K", 2, 100
-        Press "A", 2, 100
-        Press "K", 2, 100
+        Press "A", 1, 100
+        Press "K", 1, 100
+        Press "A", 1, 100
+        Press "K", 1, 100
         Exit Function
     End If
 
@@ -359,12 +385,12 @@ End Function
 Function HandleBattleSettlement()
 	Delay 200
     // 45mm炮掉落处理
-    If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) Then 
-        Press "K", 2, 200
-        Press "J", 2, 200
-        has45 = True
-        Exit Function
-    End If
+    //If FindImage("45mm-.bmp", 315, 552, 415, 580, 0.95) Then 
+    //    Press "K", 2, 200
+    //    Press "J", 2, 200
+   //     has45 = True
+    //    Exit Function
+   // End If
     
     // 结算界面通用确认/取消处理
     If FindAndPress("包裹满.bmp", 320, 540, 505, 586, 0.95, "K", DELAY_NORMAL) Then Exit Function
